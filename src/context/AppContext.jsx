@@ -4,9 +4,9 @@ const AppContext = createContext();
 
 // Initial Default Data
 const initialUsers = [
-  { id: '1', fullName: 'Bosh Administrator', username: 'admin', password: '123456', role: 'admin', createdAt: '2026-09-15 10:00' },
-  { id: '2', fullName: 'Sardor Ikromov', username: 'user', password: '123456', role: 'operator', createdAt: '2026-09-16 11:30' },
-  { id: '3', fullName: 'Bekzod Rahimov', username: 'bekzod', password: 'pass123', role: 'operator', createdAt: '2026-09-17 09:15' }
+  { id: '1', fullName: 'Bosh Administrator', username: 'admin', password: '123456', role: 'admin', allowedCameras: ['all'], createdAt: '2026-09-15 10:00' },
+  { id: '2', fullName: 'Sardor Ikromov', username: 'user', password: '123456', role: 'operator', allowedCameras: ['1', '2', '3', '4'], createdAt: '2026-09-16 11:30' },
+  { id: '3', fullName: 'Bekzod Rahimov', username: 'bekzod', password: 'pass123', role: 'operator', allowedCameras: ['1', '2'], createdAt: '2026-09-17 09:15' }
 ];
 
 const initialRooms = [
@@ -40,10 +40,11 @@ export const AppProvider = ({ children }) => {
     const saved = localStorage.getItem('cam_users');
     if (!saved) return initialUsers;
     const parsed = JSON.parse(saved);
-    // Ensure all users have a fullName fallback if loaded from older localStorage
+    // Ensure all users have a fullName & allowedCameras fallback if loaded from older localStorage
     return parsed.map(u => ({
       ...u,
-      fullName: u.fullName || (u.username === 'admin' ? 'Bosh Administrator' : u.username)
+      fullName: u.fullName || (u.username === 'admin' ? 'Bosh Administrator' : u.username),
+      allowedCameras: Array.isArray(u.allowedCameras) ? u.allowedCameras : (u.role === 'admin' ? ['all'] : ['1', '2', '3', '4'])
     }));
   });
 
@@ -68,6 +69,46 @@ export const AppProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('cam_theme') || 'dark';
   });
+
+  // Global Toast Notifications State
+  const [toasts, setToasts] = useState([]);
+
+  const showToast = ({ type = 'add', title, message }) => {
+    const id = Date.now().toString() + Math.random().toString(36).substring(2, 5);
+    const newToast = { id, type, title, message };
+    setToasts(prev => [newToast, ...prev].slice(0, 5));
+
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 4000);
+  };
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
+
+  // Global Confirmation Modal State
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    itemName: '',
+    onConfirm: null
+  });
+
+  const askConfirmation = ({ title, message, itemName, onConfirm }) => {
+    setConfirmModal({
+      isOpen: true,
+      title: title || "O'chirishni tasdiqlang",
+      message: message || "Haqiqatdan ham ushbu ma'lumotni o'chirmoqchimisiz?",
+      itemName: itemName || '',
+      onConfirm
+    });
+  };
+
+  const closeConfirmModal = () => {
+    setConfirmModal(prev => ({ ...prev, isOpen: false, onConfirm: null }));
+  };
 
   const toggleTheme = () => {
     setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
@@ -138,8 +179,10 @@ export const AppProvider = ({ children }) => {
     if (found) {
       setCurrentUser(found);
       addLog('auth', `Tizimga kirish bajarildi (${found.role})`, found.username);
+      showToast({ type: 'add', title: 'Tizimga Kirildi', message: `Xush kelibsiz, ${found.fullName || found.username}!` });
       return { success: true };
     }
+    showToast({ type: 'delete', title: 'Xatolik', message: 'Login yoki parol noto\'g\'ri!' });
     return { success: false, message: 'Login yoki parol noto\'g\'ri!' };
   };
 
@@ -148,13 +191,22 @@ export const AppProvider = ({ children }) => {
       addLog('auth', 'Tizimdan chiqildi', currentUser.username);
     }
     setCurrentUser(null);
+    showToast({ type: 'info', title: 'Tizimdan Chiqildi', message: 'Tizimdan muvaffaqiyatli chiqdingiz' });
   };
 
   // User CRUD
-  const addUser = ({ fullName, username, password, role }) => {
-    if (!username || !password) return { success: false, message: 'Barcha maydonlarni to\'ldiring' };
+  const addUser = ({ fullName, username, password, role, allowedCameras }) => {
+    if (!username || !password) {
+      showToast({ type: 'delete', title: 'Xatolik', message: 'Barcha maydonlarni to\'ldiring' });
+      return { success: false, message: 'Barcha maydonlarni to\'ldiring' };
+    }
     const exists = users.some(u => u.username.toLowerCase() === username.toLowerCase());
-    if (exists) return { success: false, message: 'Ushbu nomdagi foydalanuvchi mavjud!' };
+    if (exists) {
+      showToast({ type: 'delete', title: 'Xatolik', message: 'Ushbu nomdagi foydalanuvchi mavjud!' });
+      return { success: false, message: 'Ushbu nomdagi foydalanuvchi mavjud!' };
+    }
+
+    const defaultAllowed = role === 'admin' ? ['all'] : (allowedCameras && allowedCameras.length > 0 ? allowedCameras : cameras.map(c => c.id));
 
     const newUser = {
       id: Date.now().toString(),
@@ -162,32 +214,43 @@ export const AppProvider = ({ children }) => {
       username: username.trim(),
       password: password.trim(),
       role: role || 'operator',
+      allowedCameras: defaultAllowed,
       createdAt: new Date().toISOString().split('T')[0]
     };
     setUsers(prev => [...prev, newUser]);
     addLog('user', `Yangi foydalanuvchi yaratildi: "${newUser.fullName}" (@${newUser.username})`);
+    showToast({ type: 'add', title: 'Saqlandi', message: `Yangi foydalanuvchi "${newUser.fullName}" (@${newUser.username}) saqlandi!` });
     return { success: true };
   };
 
   const updateUser = (id, updatedData) => {
     setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updatedData } : u));
+    if (currentUser && currentUser.id === id) {
+      setCurrentUser(prev => ({ ...prev, ...updatedData }));
+    }
     addLog('user', `Foydalanuvchi ma'lumotlari yangilandi: ID ${id}`);
+    showToast({ type: 'edit', title: 'Tahrirlandi', message: `Foydalanuvchi ma'lumotlari tahrirlandi va saqlandi!` });
     return { success: true };
   };
 
   const deleteUser = (id) => {
     const userToDelete = users.find(u => u.id === id);
     if (userToDelete?.username === 'admin') {
+      showToast({ type: 'delete', title: 'Xatolik', message: 'Asosiy admin hisobini o\'chirish mumkin emas!' });
       return { success: false, message: 'Asosiy admin hisobini o\'chirish mumkin emas!' };
     }
     setUsers(prev => prev.filter(u => u.id !== id));
     addLog('user', `Foydalanuvchi o'chirildi: "${userToDelete?.username}"`);
+    showToast({ type: 'delete', title: "O'chirildi", message: `Foydalanuvchi "${userToDelete?.fullName || userToDelete?.username}" o'chirildi!` });
     return { success: true };
   };
 
   // Room CRUD
   const addRoom = ({ number, name, description }) => {
-    if (!number || !name) return { success: false, message: 'Xona raqami va nomini kiriting' };
+    if (!number || !name) {
+      showToast({ type: 'delete', title: 'Xatolik', message: 'Xona raqami va nomini kiriting' });
+      return { success: false, message: 'Xona raqami va nomini kiriting' };
+    }
     const newRoom = {
       id: Date.now().toString(),
       number: number.trim(),
@@ -196,6 +259,7 @@ export const AppProvider = ({ children }) => {
     };
     setRooms(prev => [...prev, newRoom]);
     addLog('room', `Yangi xona qo'shildi: Xona ${newRoom.number} - ${newRoom.name}`);
+    showToast({ type: 'add', title: 'Saqlandi', message: `Xona № ${newRoom.number} (${newRoom.name}) qo'shildi va saqlandi!` });
     return { success: true };
   };
 
@@ -207,6 +271,7 @@ export const AppProvider = ({ children }) => {
       description: description !== undefined ? description.trim() : r.description
     } : r));
     addLog('room', `Xona ma'lumotlari tahrirlandi: Xona ${number} (${name})`);
+    showToast({ type: 'edit', title: 'Tahrirlandi', message: `Xona № ${number} (${name}) ma'lumotlari tahrirlandi va saqlandi!` });
     return { success: true };
   };
 
@@ -216,16 +281,21 @@ export const AppProvider = ({ children }) => {
     // Remove roomId association from cameras
     setCameras(prev => prev.map(c => c.roomId === id ? { ...c, roomId: '' } : c));
     addLog('room', `Xona o'chirildi: ${roomToDelete?.number} - ${roomToDelete?.name}`);
+    showToast({ type: 'delete', title: "O'chirildi", message: `Xona № ${roomToDelete?.number} (${roomToDelete?.name}) o'chirildi!` });
     return { success: true };
   };
 
   // Camera CRUD
   const addCamera = ({ name, ip, port, protocol, roomId }) => {
-    if (!name || !ip) return { success: false, message: 'Kamera nomi va IP manzilini kiriting!' };
+    if (!name || !ip) {
+      showToast({ type: 'delete', title: 'Xatolik', message: 'Kamera nomi va IP manzilini kiriting!' });
+      return { success: false, message: 'Kamera nomi va IP manzilini kiriting!' };
+    }
     
     // IP format check simulation
     const ipRegex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
     if (!ipRegex.test(ip.trim())) {
+      showToast({ type: 'delete', title: 'Xatolik', message: 'Noto\'g\'ri IP manzil formati' });
       return { success: false, message: 'Noto\'g\'ri IP manzil formati (masalan: 192.168.1.100)' };
     }
 
@@ -241,12 +311,14 @@ export const AppProvider = ({ children }) => {
     };
     setCameras(prev => [...prev, newCam]);
     addLog('camera', `Yangi IP Kamera qo'shildi: "${newCam.name}" [IP: ${newCam.ip}]`);
+    showToast({ type: 'add', title: 'Saqlandi', message: `Yangi IP kamera "${newCam.name}" [IP: ${newCam.ip}] saqlandi!` });
     return { success: true };
   };
 
   const updateCamera = (id, updatedData) => {
     setCameras(prev => prev.map(c => c.id === id ? { ...c, ...updatedData } : c));
     addLog('camera', `Kamera sozlalamalari yangilandi: ID ${id}`);
+    showToast({ type: 'edit', title: 'Tahrirlandi', message: `Kamera sozlamalari muvaffaqiyatli tahrirlandi va saqlandi!` });
     return { success: true };
   };
 
@@ -254,6 +326,7 @@ export const AppProvider = ({ children }) => {
     const cam = cameras.find(c => c.id === id);
     setCameras(prev => prev.filter(c => c.id !== id));
     addLog('camera', `IP Kamera o'chirildi: "${cam?.name}" (${cam?.ip})`);
+    showToast({ type: 'delete', title: "O'chirildi", message: `IP Kamera "${cam?.name}" (${cam?.ip}) o'chirildi!` });
     return { success: true };
   };
 
@@ -266,6 +339,15 @@ export const AppProvider = ({ children }) => {
       ping: pingTime,
       message: isSuccess ? `IP ${ip} bilan aloqa mavjud (${pingTime} ms)` : `IP ${ip} so'rovga javob bermadi`
     };
+  };
+
+  // Check if camera is allowed for user
+  const isCameraAllowedForUser = (user, cameraId) => {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    if (!user.allowedCameras) return true;
+    if (user.allowedCameras.includes('all')) return true;
+    return user.allowedCameras.includes(cameraId);
   };
 
   return (
@@ -283,6 +365,12 @@ export const AppProvider = ({ children }) => {
       toggleTheme,
       showIpAddresses,
       setShowIpAddresses,
+      toasts,
+      showToast,
+      removeToast,
+      confirmModal,
+      askConfirmation,
+      closeConfirmModal,
       login,
       logout,
       addUser,
@@ -295,6 +383,7 @@ export const AppProvider = ({ children }) => {
       updateCamera,
       deleteCamera,
       testCameraIp,
+      isCameraAllowedForUser,
       addLog
     }}>
       {children}

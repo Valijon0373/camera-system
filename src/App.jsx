@@ -4,6 +4,8 @@ import { LoginModal } from './components/LoginModal';
 import { Navbar } from './components/Navbar';
 import { RoomsView } from './components/RoomsView';
 import { DashboardView } from './components/DashboardView';
+import { ToastNotification } from './components/ToastNotification';
+import { ConfirmModal } from './components/ConfirmModal';
 
 const MainContent = () => {
   const { currentUser, activeTab, setActiveTab, theme } = useApp();
@@ -33,11 +35,19 @@ const MainContent = () => {
 
   // If user is not logged in OR if visiting /admin without being an admin user -> Show LoginModal
   if (!currentUser || (isAdminRoute && currentUser.role !== 'admin')) {
-    return <LoginModal isAdminRoute={isAdminRoute} />;
+    return (
+      <>
+        <ToastNotification />
+        <ConfirmModal />
+        <LoginModal isAdminRoute={isAdminRoute} />
+      </>
+    );
   }
 
   return (
     <div className={`min-h-screen flex flex-col transition-colors ${theme === 'light' ? 'app-shell-light text-slate-900' : 'app-shell-dark text-slate-100'}`}>
+      <ToastNotification />
+      <ConfirmModal />
       <Navbar />
 
       <main className={`flex-1 w-full ${activeTab === 'dashboard' ? '' : 'px-4 sm:px-6 lg:px-8 py-6'}`}>

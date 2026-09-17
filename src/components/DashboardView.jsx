@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { RoomsView } from './RoomsView';
 import { MdOutlineEdit } from 'react-icons/md';
+import { LuShieldCheck } from 'react-icons/lu';
 import {
   LayoutDashboard,
   Users,
@@ -53,7 +54,8 @@ export const DashboardView = () => {
     setActiveTab,
     logout,
     theme,
-    toggleTheme
+    toggleTheme,
+    askConfirmation
   } = useApp();
 
   // Active sidebar nav item: 'dashboard' | 'users' | 'cameras' | 'rooms' | 'logs'
@@ -69,7 +71,15 @@ export const DashboardView = () => {
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState('operator');
+  const [newAllowedCameras, setNewAllowedCameras] = useState([]);
   const [userMsg, setUserMsg] = useState(null);
+
+  // Initialize newAllowedCameras with all camera IDs when opening Add User Modal
+  const openAddUserModal = () => {
+    setUserMsg(null);
+    setNewAllowedCameras(cameras.map(c => c.id));
+    setIsAddUserModalOpen(true);
+  };
 
   // Camera form states
   const [camName, setCamName] = useState('');
@@ -120,6 +130,44 @@ export const DashboardView = () => {
     setVisiblePasswords(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
+  // Dedicated Camera Permissions Modal state
+  const [isCamPermModalOpen, setIsCamPermModalOpen] = useState(false);
+  const [permUserObj, setPermUserObj] = useState(null);
+  const [permAllowedCameras, setPermAllowedCameras] = useState([]);
+  const [permSearchQuery, setPermSearchQuery] = useState('');
+  const [permRoomFilter, setPermRoomFilter] = useState('');
+  const [permMsg, setPermMsg] = useState(null);
+
+  const handleOpenPermModal = (u) => {
+    setPermUserObj(u);
+    const initialAllowed = u.role === 'admin' || (u.allowedCameras && u.allowedCameras.includes('all'))
+      ? cameras.map(c => c.id)
+      : (u.allowedCameras ? [...u.allowedCameras] : cameras.map(c => c.id));
+    setPermAllowedCameras(initialAllowed);
+    setPermSearchQuery('');
+    setPermRoomFilter('');
+    setPermMsg(null);
+    setIsCamPermModalOpen(true);
+  };
+
+  const handleSavePerms = (e) => {
+    e.preventDefault();
+    if (!permUserObj) return;
+    const res = updateUser(permUserObj.id, {
+      allowedCameras: permUserObj.role === 'admin' ? ['all'] : permAllowedCameras
+    });
+    if (res.success) {
+      setPermMsg({ type: 'success', text: `"${permUserObj.fullName || permUserObj.username}" uchun kamera ruxsatlari saqlandi!` });
+      setTimeout(() => {
+        setIsCamPermModalOpen(false);
+        setPermMsg(null);
+        setPermUserObj(null);
+      }, 800);
+    } else {
+      setPermMsg({ type: 'error', text: res.message || 'Xatolik yuz berdi' });
+    }
+  };
+
   // User Edit Modal state
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
   const [editingUserObj, setEditingUserObj] = useState(null);
@@ -127,6 +175,7 @@ export const DashboardView = () => {
   const [editUsername, setEditUsername] = useState('');
   const [editPassword, setEditPassword] = useState('');
   const [editRole, setEditRole] = useState('operator');
+  const [editAllowedCameras, setEditAllowedCameras] = useState([]);
   const [editUserMsg, setEditUserMsg] = useState(null);
 
   const handleStartEditUser = (u) => {
@@ -135,6 +184,7 @@ export const DashboardView = () => {
     setEditUsername(u.username);
     setEditPassword(u.password);
     setEditRole(u.role || 'operator');
+    setEditAllowedCameras(u.allowedCameras ? [...u.allowedCameras] : cameras.map(c => c.id));
     setEditUserMsg(null);
     setIsEditUserModalOpen(true);
   };
@@ -150,7 +200,8 @@ export const DashboardView = () => {
       fullName: editFullName.trim(),
       username: editUsername.trim(),
       password: editPassword.trim(),
-      role: editRole
+      role: editRole,
+      allowedCameras: editRole === 'admin' ? ['all'] : editAllowedCameras
     });
     if (res.success) {
       setEditUserMsg({ type: 'success', text: `Foydalanuvchi "${editFullName || editUsername}" muvaffaqiyatli yangilandi!` });
@@ -168,7 +219,13 @@ export const DashboardView = () => {
   const handleAddUser = (e) => {
     e.preventDefault();
     setUserMsg(null);
-    const res = addUser({ fullName: newFullName, username: newUsername, password: newPassword, role: newRole });
+    const res = addUser({
+      fullName: newFullName,
+      username: newUsername,
+      password: newPassword,
+      role: newRole,
+      allowedCameras: newRole === 'admin' ? ['all'] : newAllowedCameras
+    });
     if (res.success) {
       setUserMsg({ type: 'success', text: `Foydalanuvchi "${newFullName || newUsername}" muvaffaqiyatli yaratildi!` });
       setNewFullName('');
@@ -612,10 +669,14 @@ export const DashboardView = () => {
                           <tr key={u.id} className={tableRowClass}>
                             <td className={`${tableTdClass} text-center font-bold text-teal-400`}>{idx + 1}</td>
                             <td className={`${tableTdClass} font-bold ${textTitleClass}`}>{u.fullName || u.username}</td>
-                            <td className={`${tableTdClass} font-black text-black font-mono text-sm`}>@{u.username}</td>
+                            <td className={`${tableTdClass} font-bold font-mono text-sm ${isLight ? 'text-slate-800' : 'text-sky-300'}`}>@{u.username}</td>
                             <td className={tableTdClass}>
-                              <span className="px-2 py-0.5 rounded text-[10px] bg-teal-400/20 text-teal-400 font-bold">
-                                {u.role.toUpperCase()}
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                                u.role === 'admin'
+                                  ? isLight ? 'bg-purple-50 border-purple-200 text-purple-700' : 'bg-purple-500/20 border-purple-400/40 text-purple-300'
+                                  : isLight ? 'bg-sky-50 border-sky-200 text-sky-700' : 'bg-sky-500/15 border-sky-400/30 text-sky-300'
+                              }`}>
+                                {u.role === 'admin' ? 'ADMINISTRATOR' : 'FOYDALANUVCHI'}
                               </span>
                             </td>
                           </tr>
@@ -679,10 +740,7 @@ export const DashboardView = () => {
                   </div>
 
                   <button
-                    onClick={() => {
-                      setUserMsg(null);
-                      setIsAddUserModalOpen(true);
-                    }}
+                    onClick={openAddUserModal}
                     className={primaryBtn}
                   >
                     <Plus className="w-4 h-4 stroke-[3]" />
@@ -700,55 +758,110 @@ export const DashboardView = () => {
                         <th className={tableThClass}>Foydalanuvchi Logini</th>
                         <th className={tableThClass}>Paroli</th>
                         <th className={tableThClass}>Roli</th>
+                        <th className={tableThClass}>Ruxsat Berilgan Kameralar</th>
                         <th className={tableThClass}>Yaratilgan Sana</th>
                         <th className={`${tableThClass} text-right`}>Amallar</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {users.map((u, idx) => (
-                        <tr key={u.id} className={tableRowClass}>
-                          <td className={`${tableTdClass} text-center font-bold text-teal-400`}>{idx + 1}</td>
-                          <td className={`${tableTdClass} font-bold ${textTitleClass}`}>
-                            <div className="flex items-center gap-2">
-                              <span className="w-2 h-2 rounded-full bg-teal-400"></span>
-                              {u.fullName || u.username}
-                            </div>
-                          </td>
-                          <td className={`${tableTdClass} font-black text-black font-mono text-sm tracking-wide`}>
-                            @{u.username}
-                          </td>
-                          <td className={`${tableTdClass} font-mono ${textSubClass}`}>
-                            <div className="flex items-center gap-2">
-                              <span>{visiblePasswords[u.id] ? u.password : '••••••••'}</span>
-                              <button
-                                onClick={() => togglePasswordVisibility(u.id)}
-                                className="text-slate-400 hover:text-teal-400 p-1.5 rounded-lg transition-colors hover:bg-teal-400/10 cursor-pointer"
-                                title="Parolni ko'rsatish/berkitish"
-                              >
-                                {visiblePasswords[u.id] ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
-                              </button>
-                            </div>
-                          </td>
-                          <td className={tableTdClass}>
-                            <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold ${
-                              u.role === 'admin' ? 'bg-teal-400/20 text-teal-400 border border-teal-400/40' : 'bg-slate-200 text-slate-700 dark:bg-[#1e2746] dark:text-slate-300'
-                            }`}>
-                              {u.role.toUpperCase()}
-                            </span>
-                          </td>
-                          <td className={`${tableTdClass} ${textSubClass}`}>{u.createdAt}</td>
+                      {users.map((u, idx) => {
+                        const isFullAdmin = u.role === 'admin' || (u.allowedCameras && u.allowedCameras.includes('all'));
+                        const allowedCamList = isFullAdmin
+                          ? cameras
+                          : cameras.filter(c => u.allowedCameras?.includes(c.id));
+                        const allowedCount = allowedCamList.length;
+
+                        return (
+                          <tr key={u.id} className={tableRowClass}>
+                            <td className={`${tableTdClass} text-center font-bold text-teal-400`}>{idx + 1}</td>
+                            <td className={`${tableTdClass} font-bold ${textTitleClass}`}>
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-teal-400"></span>
+                                {u.fullName || u.username}
+                              </div>
+                            </td>
+                            <td className={`${tableTdClass} font-bold font-mono text-sm tracking-wide ${isLight ? 'text-slate-800' : 'text-sky-300'}`}>
+                              @{u.username}
+                            </td>
+                            <td className={`${tableTdClass} font-mono ${textSubClass}`}>
+                              <div className="flex items-center gap-2">
+                                <span>{visiblePasswords[u.id] ? u.password : '••••••••'}</span>
+                                <button
+                                  onClick={() => togglePasswordVisibility(u.id)}
+                                  className="text-slate-400 hover:text-teal-400 p-1.5 rounded-lg transition-colors hover:bg-teal-400/10 cursor-pointer"
+                                  title="Parolni ko'rsatish/berkitish"
+                                >
+                                  {visiblePasswords[u.id] ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
+                                </button>
+                              </div>
+                            </td>
+                            <td className={tableTdClass}>
+                              <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold border ${
+                                u.role === 'admin'
+                                  ? isLight ? 'bg-purple-50 border-purple-200 text-purple-700' : 'bg-purple-500/20 border-purple-400/40 text-purple-300'
+                                  : isLight ? 'bg-sky-50 border-sky-200 text-sky-700' : 'bg-sky-500/15 border-sky-400/30 text-sky-300'
+                              }`}>
+                                {u.role === 'admin' ? 'ADMINISTRATOR' : 'FOYDALANUVCHI'}
+                              </span>
+                            </td>
+                            <td className={tableTdClass}>
+                              {isFullAdmin ? (
+                                <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 inline-flex items-center gap-1.5" title="Administrator barcha kameralarga to'liq ruxsatga ega">
+                                  <CameraIcon className="w-3 h-3" />
+                                  <span>Barcha kameralar ({cameras.length})</span>
+                                </span>
+                              ) : (
+                                <div className="flex flex-col gap-1">
+                                  <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold border inline-flex items-center gap-1.5 w-max ${
+                                    allowedCount > 0
+                                      ? 'bg-sky-500/15 text-sky-400 border-sky-500/30'
+                                      : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                                  }`}>
+                                    <CameraIcon className="w-3 h-3" />
+                                    <span>{allowedCount} / {cameras.length} ta kamera</span>
+                                  </span>
+                                  {allowedCount > 0 && (
+                                    <span className="text-[10px] font-mono text-slate-400 truncate max-w-[180px]" title={allowedCamList.map(c => c.name).join(', ')}>
+                                      {allowedCamList.map(c => c.name.split(' ')[0]).join(', ')}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </td>
+                            <td className={`${tableTdClass} ${textSubClass}`}>{u.createdAt}</td>
                           <td className={`${tableTdClass} text-right`}>
                             <div className="flex items-center justify-end gap-1.5">
+                              {/* 1. Camera permissions button (Only for non-admin operators) */}
+                              {u.role !== 'admin' && (
+                                <button
+                                  onClick={() => handleOpenPermModal(u)}
+                                  className={`p-2 rounded-xl border hover:border-teal-400/60 text-teal-400 transition-all hover:scale-110 cursor-pointer flex items-center justify-center ${
+                                    isLight ? 'bg-teal-50 border-teal-200' : 'bg-teal-500/15 border-teal-400/30'
+                                  }`}
+                                  title="Kamera ruxsatlarini sozlash (Kameralarni biriktirish)"
+                                >
+                                  <LuShieldCheck className="w-5 h-5 text-teal-400" />
+                                </button>
+                              )}
+
+                              {/* 2. Edit profile button */}
                               <button
                                 onClick={() => handleStartEditUser(u)}
-                                className={`p-2 rounded-xl border hover:border-teal-500/50 text-slate-400 hover:text-teal-400 transition-all hover:scale-105 cursor-pointer ${isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#0a0e1a] border-[#1e2746]'}`}
-                                title="Foydalanuvchini tahrirlash (Modal)"
+                                className={`p-2 rounded-xl border hover:border-sky-500/50 text-slate-400 hover:text-sky-400 transition-all hover:scale-105 cursor-pointer ${
+                                  isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#0a0e1a] border-[#1e2746]'
+                                }`}
+                                title="Foydalanuvchi ma'lumotlarini tahrirlash (Login/Parol)"
                               >
-                                <MdOutlineEdit className="w-6 h-6" />
+                                <MdOutlineEdit className="w-5 h-5" />
                               </button>
                               {u.username !== 'admin' ? (
                                 <button
-                                  onClick={() => deleteUser(u.id)}
+                                  onClick={() => askConfirmation({
+                                    title: "Foydalanuvchini o'chirish",
+                                    message: `Haqiqatdan ham "${u.fullName || u.username}" (@${u.username}) hisobini o'chirmoqchimisiz?`,
+                                    itemName: `@${u.username}`,
+                                    onConfirm: () => deleteUser(u.id)
+                                  })}
                                   className={`p-2 rounded-xl border hover:border-red-500/50 text-slate-400 hover:text-red-500 transition-all hover:scale-105 cursor-pointer ${isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#0a0e1a] border-[#1e2746]'}`}
                                   title="Hisobni o'chirish"
                                 >
@@ -760,8 +873,9 @@ export const DashboardView = () => {
                             </div>
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
+                      );
+                    })}
+                  </tbody>
                   </table>
                 </div>
               </div>
@@ -1085,10 +1199,12 @@ export const DashboardView = () => {
                       onChange={(e) => setNewRole(e.target.value)}
                       className={`w-full px-3.5 py-2.5 text-xs font-mono rounded-xl outline-none ${inputClass}`}
                     >
-                      <option value="operator">Operator (Kuzatuv va xonalar)</option>
+                      <option value="operator">Foydalanuvchi (Kuzatuv va xonalar)</option>
                       <option value="admin">Administrator (To'liq huquqlar)</option>
                     </select>
                   </div>
+
+
 
                   <div className="flex items-center gap-3 pt-2">
                     <button
@@ -1271,8 +1387,8 @@ export const DashboardView = () => {
                 {/* Modal Header */}
                 <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-200 dark:border-[#1e2746]">
                   <h3 className={`text-base font-bold flex items-center gap-2 ${textTitleClass}`}>
-                    <MdOutlineEdit className="w-5 h-5 text-teal-400" />
-                    Foydalanuvchi Ma'lumotlarini Tahrirlash
+                    <LuShieldCheck className="w-5 h-5 text-teal-400 shrink-0" />
+                    Foydalanuvchi & Kamera Ruxsatlarini Tahrirlash
                   </h3>
                   <button
                     onClick={() => {
@@ -1346,10 +1462,12 @@ export const DashboardView = () => {
                       onChange={(e) => setEditRole(e.target.value)}
                       className={`w-full px-3.5 py-2.5 text-xs font-mono rounded-xl outline-none ${inputClass}`}
                     >
-                      <option value="operator">Operator (Kuzatuv va xonalar)</option>
+                      <option value="operator">Foydalanuvchi (Kuzatuv va xonalar)</option>
                       <option value="admin">Administrator (To'liq huquqlar)</option>
                     </select>
                   </div>
+
+
 
                   <div className="flex items-center gap-3 pt-2">
                     <button
@@ -1370,6 +1488,263 @@ export const DashboardView = () => {
                       className="flex-1 py-2.5 px-4 bg-gradient-to-r from-teal-400 via-sky-400 to-violet-400 hover:from-teal-300 hover:via-sky-300 hover:to-violet-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-teal-500/20 transition-all cursor-pointer"
                     >
                       SAQLASH
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL: DEDICATED KAMERA RUXSATLARINI SOZLASH (KATTAROQ MODAL + DROPDOWN & SEARCH) */}
+          {isCamPermModalOpen && permUserObj && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-md animate-in fade-in duration-200">
+              <div className={`${cardClass} w-full max-w-3xl rounded-3xl p-6 sm:p-8 shadow-2xl relative border border-slate-200 dark:border-[#1e2746]`}>
+                
+                {/* Modal Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 mb-5 border-b border-slate-200 dark:border-[#1e2746]">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-12 h-12 rounded-2xl bg-teal-500/15 border border-teal-400/30 flex items-center justify-center text-teal-400 shrink-0">
+                      <LuShieldCheck className="w-7 h-7" />
+                    </div>
+                    <div>
+                      <h3 className={`text-lg font-extrabold flex items-center gap-2 ${textTitleClass}`}>
+                        Foydalanuvchi Kamera Ruxsatlarini Sozlash
+                      </h3>
+                      <div className="flex items-center gap-2 mt-0.5 font-mono text-xs">
+                        <span className="text-teal-400 font-bold">
+                          {permUserObj.fullName || permUserObj.username} (@{permUserObj.username})
+                        </span>
+                        <span className="text-slate-500">•</span>
+                        <span className="text-emerald-400 font-bold">
+                          Ruxsat: {permAllowedCameras.length} / {cameras.length} ta kamera
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsCamPermModalOpen(false);
+                      setPermMsg(null);
+                      setPermUserObj(null);
+                    }}
+                    className={`p-2 rounded-2xl transition-colors shrink-0 ${isLight ? 'hover:bg-slate-100 text-slate-500' : 'hover:bg-[#151c33] text-slate-400 hover:text-white'}`}
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                {permMsg && (
+                  <div className={`p-3.5 mb-5 rounded-2xl text-xs font-medium ${
+                    permMsg.type === 'success' ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-500' : 'bg-red-500/15 border border-red-500/30 text-red-500'
+                  }`}>
+                    {permMsg.text}
+                  </div>
+                )}
+
+                <form onSubmit={handleSavePerms} className="space-y-4">
+                  
+                  {/* TOP FILTER BAR: Text Search + Room Dropdown Select */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    
+                    {/* Search Input */}
+                    <div className="sm:col-span-2 relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <Search className="w-4 h-4 text-teal-400" />
+                      </div>
+                      <input
+                        type="text"
+                        value={permSearchQuery}
+                        onChange={(e) => setPermSearchQuery(e.target.value)}
+                        placeholder="IP manzil, kamera nomi yoki xonalarni izlash..."
+                        className={`w-full pl-10 pr-9 py-2.5 text-xs font-mono rounded-xl outline-none border transition-all ${inputClass}`}
+                        autoFocus
+                      />
+                      {permSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setPermSearchQuery('')}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Room Dropdown Select */}
+                    <div className="sm:col-span-1">
+                      <select
+                        value={permRoomFilter}
+                        onChange={(e) => setPermRoomFilter(e.target.value)}
+                        className={`w-full px-3.5 py-2.5 text-xs font-medium rounded-xl outline-none border transition-all ${inputClass}`}
+                      >
+                        <option value="">Barcha Xonalar (Filter)</option>
+                        {rooms.map(r => (
+                          <option key={r.id} value={r.id}>
+                            Xona № {r.number} - {r.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                  </div>
+
+                  {/* Quick Toggle Controls & Stats Bar */}
+                  <div className="flex items-center justify-between font-sans text-xs px-1 pt-1">
+                    <div className="flex items-center gap-3">
+                      <span className={textSubClass}>
+                        Ko'rinmoqda: <strong className="text-teal-600 dark:text-teal-400 font-bold">
+                          {cameras.filter(cam => {
+                            const q = permSearchQuery.toLowerCase();
+                            const room = rooms.find(r => r.id === cam.roomId);
+                            const matchesRoom = !permRoomFilter || cam.roomId === permRoomFilter;
+                            const matchesQuery = !q || (
+                              cam.name.toLowerCase().includes(q) ||
+                              cam.ip.toLowerCase().includes(q) ||
+                              (cam.protocol && cam.protocol.toLowerCase().includes(q)) ||
+                              (room && (room.number.toLowerCase().includes(q) || room.name.toLowerCase().includes(q)))
+                            );
+                            return matchesRoom && matchesQuery;
+                          }).length} ta kamera
+                        </strong>
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (permAllowedCameras.length === cameras.length) {
+                          setPermAllowedCameras([]);
+                        } else {
+                          setPermAllowedCameras(cameras.map(c => c.id));
+                        }
+                      }}
+                      className={`px-3.5 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                        permAllowedCameras.length === cameras.length
+                          ? isLight
+                            ? 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100'
+                            : 'bg-rose-500/10 border-rose-500/30 text-rose-300 hover:bg-rose-500/20'
+                          : isLight
+                            ? 'bg-teal-50 border-teal-200 text-teal-700 hover:bg-teal-100'
+                            : 'bg-teal-500/15 border-teal-400/30 text-teal-300 hover:bg-teal-500/25'
+                      }`}
+                    >
+                      {permAllowedCameras.length === cameras.length ? 'Barchasini bekor qilish' : 'Barchasini tanlash'}
+                    </button>
+                  </div>
+
+                  {/* 2-COLUMN GRID OF CAMERAS */}
+                  <div className={`p-3.5 rounded-2xl max-h-[380px] overflow-y-auto border ${
+                    isLight ? 'bg-slate-50/50 border-slate-200/80' : 'bg-[#0a0e1a]/60 border-white/5'
+                  }`}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {cameras
+                        .filter(cam => {
+                          const q = permSearchQuery.toLowerCase();
+                          const room = rooms.find(r => r.id === cam.roomId);
+                          const matchesRoom = !permRoomFilter || cam.roomId === permRoomFilter;
+                          const matchesQuery = !q || (
+                            cam.name.toLowerCase().includes(q) ||
+                            cam.ip.toLowerCase().includes(q) ||
+                            (cam.protocol && cam.protocol.toLowerCase().includes(q)) ||
+                            (room && (room.number.toLowerCase().includes(q) || room.name.toLowerCase().includes(q)))
+                          );
+                          return matchesRoom && matchesQuery;
+                        })
+                        .map(cam => {
+                          const isChecked = permAllowedCameras.includes(cam.id);
+                          const camRoom = rooms.find(r => r.id === cam.roomId);
+                          return (
+                            <label key={cam.id} className={`flex items-start justify-between p-3.5 rounded-2xl cursor-pointer select-none transition-all border ${
+                              isChecked
+                                ? isLight
+                                  ? 'bg-teal-50/80 border-teal-300 text-slate-900 shadow-sm'
+                                  : 'bg-teal-500/15 border-teal-400/30 text-white shadow-lg shadow-teal-500/5'
+                                : isLight
+                                  ? 'bg-white border-slate-200 hover:border-slate-300 text-slate-600 opacity-75 hover:opacity-100'
+                                  : 'bg-[#0e1424]/70 border-white/5 hover:border-white/10 text-slate-400 opacity-75 hover:opacity-100'
+                            }`}>
+                              <div className="flex items-start gap-3 min-w-0 flex-1">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    setPermAllowedCameras(prev =>
+                                      isChecked ? prev.filter(id => id !== cam.id) : [...prev, cam.id]
+                                    );
+                                  }}
+                                  className="w-4.5 h-4.5 rounded text-teal-600 focus:ring-teal-400 accent-teal-600 mt-0.5 shrink-0 cursor-pointer"
+                                />
+                                <div className="flex flex-col min-w-0 pr-2">
+                                  <span className={`text-xs font-semibold truncate ${
+                                    isChecked
+                                      ? isLight ? 'text-slate-900 font-bold' : 'text-white font-bold'
+                                      : isLight ? 'text-slate-700' : 'text-slate-300'
+                                  }`}>
+                                    {cam.name}
+                                  </span>
+                                  <span className={`text-[11px] font-mono mt-0.5 ${
+                                    isLight ? 'text-teal-700' : 'text-teal-400'
+                                  }`}>
+                                    IP: {cam.ip} ({cam.protocol})
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Room Badge (Clean without 🏢 emoji) */}
+                              <span className={`text-[10px] font-sans px-2.5 py-1 rounded-full font-semibold shrink-0 border ${
+                                camRoom
+                                  ? isLight
+                                    ? 'bg-teal-100/70 text-teal-800 border-teal-200'
+                                    : 'bg-teal-500/20 text-teal-300 border-teal-400/30'
+                                  : isLight
+                                    ? 'bg-slate-100 text-slate-500 border-slate-200'
+                                    : 'bg-slate-800/40 text-slate-400 border-slate-700/40'
+                              }`}>
+                                {camRoom ? `Xona № ${camRoom.number}` : 'Xonasiz'}
+                              </span>
+                            </label>
+                          );
+                        })}
+                    </div>
+
+                    {cameras.filter(cam => {
+                      const q = permSearchQuery.toLowerCase();
+                      const room = rooms.find(r => r.id === cam.roomId);
+                      const matchesRoom = !permRoomFilter || cam.roomId === permRoomFilter;
+                      const matchesQuery = !q || (
+                        cam.name.toLowerCase().includes(q) ||
+                        cam.ip.toLowerCase().includes(q) ||
+                        (room && (room.number.toLowerCase().includes(q) || room.name.toLowerCase().includes(q)))
+                      );
+                      return matchesRoom && matchesQuery;
+                    }).length === 0 && (
+                      <div className="text-center py-10 text-slate-400 text-xs font-medium">
+                        Qidiruv va filter so'rovi bo'yicha hech qanday kamera topilmadi
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Footer Buttons */}
+                  <div className="flex items-center gap-3 pt-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsCamPermModalOpen(false);
+                        setPermMsg(null);
+                        setPermUserObj(null);
+                      }}
+                      className={`flex-1 py-3 px-4 font-semibold text-xs rounded-xl border transition-all cursor-pointer ${
+                        isLight ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700' : 'bg-[#151c33] hover:bg-[#1c2646] border-[#222c4a] text-slate-300'
+                      }`}
+                    >
+                      Bekor qilish
+                    </button>
+
+                    <button
+                      type="submit"
+                      className="flex-1 py-3 px-4 bg-gradient-to-r from-teal-500 via-sky-500 to-indigo-500 hover:from-teal-400 hover:via-sky-400 hover:to-indigo-400 text-white font-bold text-xs rounded-xl shadow-lg shadow-teal-500/20 transition-all cursor-pointer uppercase tracking-wider"
+                    >
+                      RUXSATLARNI SAQLASH
                     </button>
                   </div>
                 </form>

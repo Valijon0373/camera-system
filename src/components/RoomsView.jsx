@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { CameraStreamPlayer } from './CameraStreamPlayer';
-import { Plus, Edit3, Trash2, Camera as CameraIcon, Check, X, Building, Info, SlidersHorizontal, RefreshCw, Eye, EyeOff, Search } from 'lucide-react';
+import { Plus, Edit3, Trash2, Camera as CameraIcon, Check, X, Building, Info, SlidersHorizontal, RefreshCw, Eye, EyeOff, Search, Lock, ShieldAlert } from 'lucide-react';
 import { FaPowerOff } from 'react-icons/fa6';
 import { MdOutlineEdit } from 'react-icons/md';
 
 export const RoomsView = () => {
-  const { currentUser, rooms, cameras, addRoom, updateRoom, deleteRoom, searchQuery, setSearchQuery, showIpAddresses, setShowIpAddresses, theme } = useApp();
+  const { currentUser, rooms, cameras, addRoom, updateRoom, deleteRoom, searchQuery, setSearchQuery, showIpAddresses, setShowIpAddresses, theme, isCameraAllowedForUser, askConfirmation } = useApp();
   const isLight = theme === 'light';
   const isAdmin = currentUser?.role === 'admin';
+
+  // Allowed cameras count for non-admin user
+  const allowedCamerasForUser = cameras.filter(c => isCameraAllowedForUser(currentUser, c.id));
   
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -89,9 +92,18 @@ export const RoomsView = () => {
             <h2 className={`text-xl font-extrabold tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
               UrSPI Xonalar va IP Kameralar Kuzatuvi
             </h2>
-            <p className={`text-xs mt-0.5 font-mono ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-              Jami xonalar: <span className={`${isLight ? 'text-teal-600' : 'text-teal-300'} font-bold`}>{rooms.length} ta</span> | IP Kameralar: <span className="text-emerald-500 font-bold">{cameras.length} ta</span>
-            </p>
+            <div className="flex items-center gap-2 mt-0.5 font-mono text-xs">
+              <span className={isLight ? 'text-slate-600' : 'text-slate-400'}>
+                Jami xonalar: <span className={`${isLight ? 'text-teal-600' : 'text-teal-300'} font-bold`}>{rooms.length} ta</span> | IP Kameralar: <span className="text-emerald-500 font-bold">{cameras.length} ta</span>
+              </span>
+              {!isAdmin && (
+                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
+                  allowedCamerasForUser.length > 0 ? 'bg-teal-400/15 border-teal-400/30 text-teal-400' : 'bg-rose-500/15 border-rose-500/30 text-rose-400'
+                }`}>
+                  🛡️ Siz uchun: {allowedCamerasForUser.length}/{cameras.length} ta ruxsat berilgan
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -130,6 +142,18 @@ export const RoomsView = () => {
         </div>
       </div>
 
+      {/* Warning for Operator with 0 allowed cameras */}
+      {!isAdmin && allowedCamerasForUser.length === 0 && (
+        <div className={`p-4 rounded-2xl border flex items-center gap-3 font-mono text-xs ${
+          isLight ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+        }`}>
+          <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0" />
+          <span>
+            Diqqat: Sizning hisobingizga hozircha birorta ham kamerani ko'rish huquqi (ruxsati) berilmagan. Iltimos, Administrator bilan bog'laning.
+          </span>
+        </div>
+      )}
+
       {/* Empty State */}
       {filteredRooms.length === 0 && (
         <div className={`text-center py-16 rounded-3xl border ${isLight ? 'bg-white border-slate-200' : 'bg-white/[0.03] border-white/10'}`}>
@@ -148,6 +172,7 @@ export const RoomsView = () => {
         {filteredRooms.map((room) => {
           // Find camera associated with this room
           const roomCamera = cameras.find(c => c.roomId === room.id);
+          const hasPermission = roomCamera ? isCameraAllowedForUser(currentUser, roomCamera.id) : false;
           const isCameraOff = roomCamera ? disabledCameraIds.includes(roomCamera.id) : true;
           const isEditing = editingRoomId === room.id;
 
@@ -220,15 +245,21 @@ export const RoomsView = () => {
                         XONA № {room.number}
                       </span>
                       {roomCamera && (
-                        <span className={`flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-0.5 rounded-md ${
-                          isCameraOff
-                            ? isLight ? 'bg-rose-50 border border-rose-200 text-rose-600' : 'bg-rose-500/10 border border-rose-500/30 text-rose-400'
-                            : isLight ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'
-                        }`}>
-                          <span className={`w-2 h-2 rounded-full ${isCameraOff ? 'bg-rose-500' : 'bg-emerald-400 animate-ping'}`}></span>
-                          <FaPowerOff className={`w-3 h-3 ${isCameraOff ? 'text-rose-400' : 'text-emerald-400'}`} />
-                          {isCameraOff ? 'KAMERA O\'CHIRILGAN' : (showIpAddresses ? `IP: ${roomCamera.ip}` : 'KAMERA ONLINE')}
-                        </span>
+                        hasPermission ? (
+                          <span className={`flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-0.5 rounded-md ${
+                            isCameraOff
+                              ? isLight ? 'bg-rose-50 border border-rose-200 text-rose-600' : 'bg-rose-500/10 border border-rose-500/30 text-rose-400'
+                              : isLight ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'
+                          }`}>
+                            <span className={`w-2 h-2 rounded-full ${isCameraOff ? 'bg-rose-500' : 'bg-emerald-400 animate-ping'}`}></span>
+                            <FaPowerOff className={`w-3 h-3 ${isCameraOff ? 'text-rose-400' : 'text-emerald-400'}`} />
+                            {isCameraOff ? 'KAMERA O\'CHIRILGAN' : (showIpAddresses ? `IP: ${roomCamera.ip}` : 'KAMERA ONLINE')}
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 text-[10px] font-mono px-2.5 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-400">
+                            <Lock className="w-3 h-3 text-amber-400" /> RUXSAT YO'Q
+                          </span>
+                        )
                       )}
                     </div>
                     <h3 className={`text-lg font-extrabold transition-colors ${isLight ? 'text-slate-900 group-hover:text-teal-700' : 'text-white group-hover:text-teal-200'}`}>
@@ -241,16 +272,34 @@ export const RoomsView = () => {
                 )}
               </div>
 
-              {/* Video Player or No-Camera Placeholder */}
+              {/* Video Player or Restricted / No-Camera Placeholder */}
               <div className="mt-2">
                 {roomCamera ? (
-                  <CameraStreamPlayer
-                    camera={roomCamera}
-                    roomName={room.name}
-                    roomNumber={room.number}
-                    isPowerOn={!isCameraOff}
-                    onTogglePower={() => toggleCameraPower(roomCamera.id)}
-                  />
+                  hasPermission ? (
+                    <CameraStreamPlayer
+                      camera={roomCamera}
+                      roomName={room.name}
+                      roomNumber={room.number}
+                      isPowerOn={!isCameraOff}
+                      onTogglePower={() => toggleCameraPower(roomCamera.id)}
+                    />
+                  ) : (
+                    <div className={`aspect-video border rounded-xl flex flex-col items-center justify-center p-6 text-center ${
+                      isLight ? 'bg-amber-50/70 border-amber-200' : 'bg-amber-500/10 border border-amber-500/30'
+                    }`}>
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-2 ${
+                        isLight ? 'bg-amber-100 text-amber-600' : 'bg-amber-500/20 text-amber-400'
+                      }`}>
+                        <Lock className="w-6 h-6" />
+                      </div>
+                      <p className={`text-xs font-bold ${isLight ? 'text-amber-900' : 'text-amber-200'}`}>
+                        Ko'rish Huquqi Yo'q
+                      </p>
+                      <p className={`text-[11px] font-mono mt-1 ${isLight ? 'text-amber-700' : 'text-amber-400/80'}`}>
+                        Sizga ushbu kamerani ({roomCamera.name}) ko'rish ruxsati berilmagan.
+                      </p>
+                    </div>
+                  )
                 ) : (
                   <div className={`aspect-video border border-dashed rounded-xl flex flex-col items-center justify-center p-6 text-center ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-950/80 border-white/10'}`}>
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-2 ${isLight ? 'bg-white border border-slate-200' : 'bg-white/5 border border-white/10'}`}>
@@ -311,7 +360,12 @@ export const RoomsView = () => {
 
                     {/* 3) O'chirish button */}
                     <button
-                      onClick={() => deleteRoom(room.id)}
+                      onClick={() => askConfirmation({
+                        title: "Xonani o'chirish",
+                        message: `Haqiqatdan ham "Xona № ${room.number} - ${room.name}"ni o'chirmoqchimisiz?`,
+                        itemName: `Xona № ${room.number} (${room.name})`,
+                        onConfirm: () => deleteRoom(room.id)
+                      })}
                       className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all hover:scale-105 cursor-pointer ${
                         isLight
                           ? 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100 hover:border-rose-300'
