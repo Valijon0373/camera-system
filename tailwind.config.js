@@ -8,17 +8,18 @@ export default {
     extend: {
       colors: {
         dark: {
-          900: '#090d16',
-          800: '#0f172a',
-          700: '#1e293b',
-          600: '#334155',
+          900: '#070b14',
+          800: '#0c1222',
+          700: '#151c2e',
+          600: '#1e293b',
         },
         cyber: {
-          green: '#10b981',
-          cyan: '#06b6d4',
-          blue: '#3b82f6',
-          red: '#ef4444',
+          green: '#2dd4bf',
+          cyan: '#38bdf8',
+          blue: '#60a5fa',
+          red: '#f43f5e',
           amber: '#f59e0b',
+          violet: '#a78bfa',
         }
       },
       fontFamily: {

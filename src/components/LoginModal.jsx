@@ -29,25 +29,26 @@ export const LoginModal = ({ isAdminRoute: propIsAdminRoute }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-lg overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#05080f]/92 backdrop-blur-lg overflow-y-auto">
       {/* Ambient background glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-teal-400/15 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-sky-400/12 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-violet-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div className="relative w-full max-w-md glass-panel border border-slate-800 rounded-3xl p-8 shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-md glass-panel border border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden">
         {/* Top Header Badge */}
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-600 via-emerald-500 to-cyan-400 p-0.5 shadow-lg shadow-cyan-500/20 mb-4">
-            <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-              <Camera className="w-8 h-8 text-cyan-400 animate-pulse" />
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-teal-400 via-sky-400 to-violet-400 p-0.5 shadow-lg shadow-teal-500/25 mb-4">
+            <div className="w-full h-full bg-[#070b14] rounded-[14px] flex items-center justify-center">
+              <Camera className="w-8 h-8 text-teal-300 animate-pulse" />
             </div>
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
-            UrSPI <span className="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">Camera System</span>
+            UrSPI <span className="bg-gradient-to-r from-teal-300 via-sky-300 to-violet-300 bg-clip-text text-transparent">Camera System</span>
           </h1>
           {isAdminRoute ? (
             <div className="mt-2 flex flex-col items-center gap-1">
-              <span className="px-3.5 py-1 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-mono text-xs font-bold animate-pulse">
+              <span className="px-3.5 py-1 rounded-full bg-white border border-white text-black font-mono text-xs font-bold animate-pulse">
                 🛡️ ADMINISTRATOR KIRISH SAHIFASI (/admin)
               </span>
               <p className="text-xs text-slate-400 mt-1 font-mono">
@@ -85,7 +86,7 @@ export const LoginModal = ({ isAdminRoute: propIsAdminRoute }) => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Login (masalan: admin)"
-                className="w-full pl-11 pr-4 py-3 text-sm font-mono glass-input rounded-xl focus:ring-2 focus:ring-cyan-500 transition-all"
+                className="w-full pl-11 pr-4 py-3 text-sm font-mono glass-input rounded-xl focus:ring-2 focus:ring-teal-400/40 transition-all"
               />
             </div>
           </div>
@@ -104,7 +105,7 @@ export const LoginModal = ({ isAdminRoute: propIsAdminRoute }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-11 pr-10 py-3 text-sm font-mono glass-input rounded-xl focus:ring-2 focus:ring-cyan-500 transition-all"
+                className="w-full pl-11 pr-10 py-3 text-sm font-mono glass-input rounded-xl focus:ring-2 focus:ring-teal-400/40 transition-all"
               />
               <button
                 type="button"
@@ -119,7 +120,7 @@ export const LoginModal = ({ isAdminRoute: propIsAdminRoute }) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 px-4 bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold rounded-xl shadow-lg shadow-cyan-500/25 transition-all transform active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-3.5 px-4 bg-gradient-to-r from-teal-400 via-sky-400 to-violet-400 hover:from-teal-300 hover:via-sky-300 hover:to-violet-300 text-slate-950 font-bold rounded-xl shadow-lg shadow-teal-500/25 transition-all transform active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
           >
             {loading ? (
               <span className="inline-block w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>

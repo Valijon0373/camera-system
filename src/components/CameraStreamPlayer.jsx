@@ -40,7 +40,7 @@ export const CameraStreamPlayer = ({ camera, roomName, roomNumber }) => {
       ctx.fillRect(0, 0, width, height);
 
       // Grid lines
-      ctx.strokeStyle = 'rgba(6, 182, 212, 0.07)';
+      ctx.strokeStyle = 'rgba(45, 212, 191, 0.08)';
       ctx.lineWidth = 1;
       const gridSize = 40;
       for (let x = 0; x < width; x += gridSize) {
@@ -84,7 +84,7 @@ export const CameraStreamPlayer = ({ camera, roomName, roomNumber }) => {
 
       // Target corners
       const cLen = 10;
-      ctx.strokeStyle = '#06b6d4';
+      ctx.strokeStyle = '#38bdf8';
       ctx.lineWidth = 3;
       // Top-Left
       ctx.beginPath(); ctx.moveTo(boxX - 5, boxY - 5 + cLen); ctx.lineTo(boxX - 5, boxY - 5); ctx.lineTo(boxX - 5 + cLen, boxY - 5); ctx.stroke();
@@ -122,10 +122,10 @@ export const CameraStreamPlayer = ({ camera, roomName, roomNumber }) => {
       // Camera Name & IP overlay at bottom left
       ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
       ctx.fillRect(15, height - 45, 260, 32);
-      ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+      ctx.strokeStyle = 'rgba(45, 212, 191, 0.45)';
       ctx.strokeRect(15, height - 45, 260, 32);
 
-      ctx.fillStyle = '#06b6d4';
+      ctx.fillStyle = '#2dd4bf';
       ctx.font = 'bold 11px "JetBrains Mono", monospace';
       ctx.fillText(`KAMERA: ${camera?.name || 'IP KAMERA'}`, 25, height - 30);
 
@@ -203,7 +203,7 @@ export const CameraStreamPlayer = ({ camera, roomName, roomNumber }) => {
   };
 
   return (
-    <div ref={containerRef} className="relative group bg-slate-950 rounded-xl overflow-hidden border border-slate-800 shadow-2xl transition-all">
+    <div ref={containerRef} className="relative group bg-[#05080f] rounded-xl overflow-hidden border border-white/10 shadow-2xl transition-all">
       {/* Canvas Video Stream */}
       <canvas
         ref={canvasRef}
@@ -214,9 +214,9 @@ export const CameraStreamPlayer = ({ camera, roomName, roomNumber }) => {
 
       {/* PTZ Action Overlay */}
       {ptzAction && (
-        <div className="absolute inset-0 bg-cyan-950/40 backdrop-blur-[2px] flex items-center justify-center animate-fade-in pointer-events-none">
-          <div className="bg-slate-900/90 border border-cyan-500/50 rounded-lg px-4 py-2 text-cyan-400 font-mono text-sm flex items-center gap-2 shadow-lg">
-            <RefreshCw className="w-4 h-4 animate-spin text-cyan-400" />
+        <div className="absolute inset-0 bg-teal-950/40 backdrop-blur-[2px] flex items-center justify-center animate-fade-in pointer-events-none">
+          <div className="bg-slate-900/90 border border-teal-400/50 rounded-lg px-4 py-2 text-teal-300 font-mono text-sm flex items-center gap-2 shadow-lg">
+            <RefreshCw className="w-4 h-4 animate-spin text-teal-300" />
             PTZ HARAKATI: <span className="font-bold uppercase text-white">{ptzAction}</span>
           </div>
         </div>
@@ -235,11 +235,11 @@ export const CameraStreamPlayer = ({ camera, roomName, roomNumber }) => {
         <div className="flex items-center gap-2">
           {/* PTZ Buttons */}
           <div className="flex items-center bg-slate-900/80 border border-slate-700/60 rounded-lg p-1 text-xs">
-            <button onClick={() => handlePtz('Yuqoriga')} className="hover:bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 hover:text-cyan-400 font-mono" title="Yuqoriga">▲</button>
-            <button onClick={() => handlePtz('Pastga')} className="hover:bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 hover:text-cyan-400 font-mono" title="Pastga">▼</button>
-            <button onClick={() => handlePtz('Chapga')} className="hover:bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 hover:text-cyan-400 font-mono" title="Chapga">◄</button>
-            <button onClick={() => handlePtz('O\'ngga')} className="hover:bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 hover:text-cyan-400 font-mono" title="O'ngga">►</button>
-            <button onClick={() => handlePtz('Zoom +')} className="hover:bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 hover:text-cyan-400 font-mono border-l border-slate-700 ml-1 pl-1.5" title="Yaqinlashtirish">+ Zoom</button>
+            <button onClick={() => handlePtz('Yuqoriga')} className="hover:bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 hover:text-teal-300 font-mono" title="Yuqoriga">▲</button>
+            <button onClick={() => handlePtz('Pastga')} className="hover:bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 hover:text-teal-300 font-mono" title="Pastga">▼</button>
+            <button onClick={() => handlePtz('Chapga')} className="hover:bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 hover:text-teal-300 font-mono" title="Chapga">◄</button>
+            <button onClick={() => handlePtz('O\'ngga')} className="hover:bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 hover:text-teal-300 font-mono" title="O'ngga">►</button>
+            <button onClick={() => handlePtz('Zoom +')} className="hover:bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 hover:text-teal-300 font-mono border-l border-slate-700 ml-1 pl-1.5" title="Yaqinlashtirish">+ Zoom</button>
           </div>
         </div>
 
@@ -247,7 +247,7 @@ export const CameraStreamPlayer = ({ camera, roomName, roomNumber }) => {
           {/* Audio toggle */}
           <button
             onClick={() => setIsAudioOn(!isAudioOn)}
-            className={`p-2.5 rounded-xl border text-xs transition-all hover:scale-105 ${isAudioOn ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300' : 'bg-slate-900/90 border-slate-700 text-slate-300 hover:text-white'}`}
+            className={`p-2.5 rounded-xl border text-xs transition-all hover:scale-105 ${isAudioOn ? 'bg-teal-400/20 border-teal-400/50 text-teal-200' : 'bg-slate-900/90 border-slate-700 text-slate-300 hover:text-white'}`}
             title={isAudioOn ? 'Ovozni o\'chirish' : 'Ovozni yoqish'}
           >
             {isAudioOn ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
@@ -265,7 +265,7 @@ export const CameraStreamPlayer = ({ camera, roomName, roomNumber }) => {
           {/* Fullscreen button */}
           <button
             onClick={toggleFullscreen}
-            className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-slate-300 hover:text-cyan-400 hover:border-cyan-500/50 transition-all hover:scale-105"
+            className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-slate-300 hover:text-teal-300 hover:border-teal-400/50 transition-all hover:scale-105"
             title="To'liq ekranga o'tkazish"
           >
             <Maximize2 className="w-5 h-5" />

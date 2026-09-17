@@ -138,25 +138,34 @@ export const DashboardView = () => {
   const onlineCamerasCount = cameras.filter(c => c.status === 'online').length;
 
   const isLight = theme === 'light';
-  const cardClass = isLight ? 'bg-white border border-slate-200 text-slate-800 shadow-sm' : 'bg-[#13192b] border border-[#1e2746] text-white shadow-xl';
-  const subCardClass = isLight ? 'bg-slate-50 border border-slate-200 text-slate-800' : 'bg-[#0a0e1a] border border-[#1e2746] text-slate-200';
+  const cardClass = isLight ? 'bg-white/90 border border-slate-200 text-slate-800 shadow-sm shadow-teal-900/5' : 'bg-[#12182a]/90 border border-white/[0.06] text-white shadow-xl shadow-black/20';
+  const subCardClass = isLight ? 'bg-slate-50 border border-slate-200 text-slate-800' : 'bg-[#0a101c] border border-white/10 text-slate-200';
   const textTitleClass = isLight ? 'text-slate-900' : 'text-white';
   const textSubClass = isLight ? 'text-slate-600' : 'text-slate-400';
-  const inputClass = isLight ? 'bg-slate-50 border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-[#00d294]' : 'bg-[#0a0e1a] border border-[#1e2746] text-white placeholder:text-slate-500 focus:border-[#00d294]';
+  const inputClass = isLight ? 'bg-slate-50 border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-teal-500' : 'bg-[#0a101c] border border-white/10 text-white placeholder:text-slate-500 focus:border-teal-400';
   const labelClass = isLight ? 'block text-xs font-mono text-slate-700 uppercase mb-1' : 'block text-xs font-mono text-slate-300 uppercase mb-1';
-  const tableHeaderClass = isLight ? 'bg-slate-100 text-slate-700 uppercase text-[11px] font-bold' : 'bg-[#151c33] text-slate-300 uppercase text-[11px] font-bold';
-  const tableThClass = isLight ? 'border border-slate-300 px-3.5 py-2.5 font-bold text-slate-700 bg-slate-100' : 'border border-[#222c4a] px-3.5 py-2.5 font-bold text-slate-300 bg-[#151c33]';
-  const tableTdClass = isLight ? 'border border-slate-300 px-3.5 py-2.5 text-slate-800' : 'border border-[#222c4a] px-3.5 py-2.5 text-slate-200';
-  const tableRowClass = isLight ? 'hover:bg-slate-100/80 text-slate-800 transition-colors even:bg-slate-50/60' : 'hover:bg-[#10172a] text-slate-200 transition-colors even:bg-[#0a0e1a]/40';
+  const tableHeaderClass = isLight ? 'bg-teal-50 text-teal-800 uppercase text-[11px] font-bold' : 'bg-[#151c33] text-slate-300 uppercase text-[11px] font-bold';
+  const tableThClass = isLight ? 'border border-slate-200 px-3.5 py-2.5 font-bold text-slate-700 bg-teal-50' : 'border border-[#222c4a] px-3.5 py-2.5 font-bold text-slate-300 bg-[#151c33]';
+  const tableTdClass = isLight ? 'border border-slate-200 px-3.5 py-2.5 text-slate-800' : 'border border-[#222c4a] px-3.5 py-2.5 text-slate-200';
+  const tableRowClass = isLight ? 'hover:bg-teal-50/70 text-slate-800 transition-colors even:bg-slate-50/60' : 'hover:bg-[#10172a] text-slate-200 transition-colors even:bg-[#0a0e1a]/40';
+  const primaryBtn = 'px-4 py-2.5 bg-gradient-to-r from-teal-400 via-sky-400 to-violet-400 hover:from-teal-300 hover:via-sky-300 hover:to-violet-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-teal-500/20 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer';
+  const navActive = isLight
+    ? 'bg-gradient-to-r from-teal-500 to-sky-500 text-white font-bold shadow-lg shadow-teal-500/20'
+    : 'bg-gradient-to-r from-teal-400 to-sky-400 text-slate-950 font-bold shadow-lg shadow-teal-400/20';
+  const navIdle = isLight
+    ? 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+    : 'text-slate-400 hover:text-white hover:bg-white/5';
+  const navBadgeIdle = isLight ? 'bg-slate-100 text-slate-600' : 'bg-white/10 text-slate-300';
+  const navBadgeActive = isLight ? 'bg-white/25 text-white' : 'bg-slate-950/25 text-slate-950';
 
   return (
     <div className={`flex h-[calc(100vh-4rem)] font-sans overflow-hidden border-t ${
-      theme === 'light' ? 'bg-slate-100 text-slate-800 border-slate-200' : 'bg-[#0a0e1a] text-slate-100 border-slate-800'
+      theme === 'light' ? 'bg-transparent text-slate-800 border-teal-100' : 'bg-transparent text-slate-100 border-white/5'
     }`}>
       
       {/* LEFT SIDEBAR */}
       <aside className={`flex flex-col justify-between transition-all duration-300 z-30 border-r ${
-        theme === 'light' ? 'bg-white border-slate-200' : 'bg-[#0d1222] border-[#1a2238]'
+        theme === 'light' ? 'bg-white/90 border-teal-100' : 'bg-[#0b101c]/90 border-white/5'
       } ${sidebarOpen ? 'w-64' : 'w-20'}`}>
         <div>
           {/* Navigation Links */}
@@ -166,9 +175,7 @@ export const DashboardView = () => {
             <button
               onClick={() => setNavTab('dashboard')}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                navTab === 'dashboard'
-                  ? 'bg-[#00d294] text-[#0a0e1a] font-bold shadow-lg shadow-[#00d294]/20'
-                  : 'text-slate-400 hover:text-white hover:bg-[#151c33]'
+                navTab === 'dashboard' ? navActive : navIdle
               }`}
             >
               <div className="flex items-center gap-3">
@@ -181,9 +188,7 @@ export const DashboardView = () => {
             <button
               onClick={() => setNavTab('cameras')}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                navTab === 'cameras'
-                  ? 'bg-[#00d294] text-[#0a0e1a] font-bold shadow-lg shadow-[#00d294]/20'
-                  : 'text-slate-400 hover:text-white hover:bg-[#151c33]'
+                navTab === 'cameras' ? navActive : navIdle
               }`}
             >
               <div className="flex items-center gap-3">
@@ -192,7 +197,7 @@ export const DashboardView = () => {
               </div>
               {sidebarOpen && (
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
-                  navTab === 'cameras' ? 'bg-[#0a0e1a]/30 text-[#0a0e1a]' : 'bg-[#1e2746] text-slate-300'
+                  navTab === 'cameras' ? navBadgeActive : navBadgeIdle
                 }`}>
                   {cameras.length}
                 </span>
@@ -203,9 +208,7 @@ export const DashboardView = () => {
             <button
               onClick={() => setNavTab('rooms')}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                navTab === 'rooms'
-                  ? 'bg-[#00d294] text-[#0a0e1a] font-bold shadow-lg shadow-[#00d294]/20'
-                  : 'text-slate-400 hover:text-white hover:bg-[#151c33]'
+                navTab === 'rooms' ? navActive : navIdle
               }`}
             >
               <div className="flex items-center gap-3">
@@ -214,7 +217,7 @@ export const DashboardView = () => {
               </div>
               {sidebarOpen && (
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
-                  navTab === 'rooms' ? 'bg-[#0a0e1a]/30 text-[#0a0e1a]' : 'bg-[#1e2746] text-slate-300'
+                  navTab === 'rooms' ? navBadgeActive : navBadgeIdle
                 }`}>
                   {rooms.length}
                 </span>
@@ -225,9 +228,7 @@ export const DashboardView = () => {
             <button
               onClick={() => setNavTab('users')}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                navTab === 'users'
-                  ? 'bg-[#00d294] text-[#0a0e1a] font-bold shadow-lg shadow-[#00d294]/20'
-                  : 'text-slate-400 hover:text-white hover:bg-[#151c33]'
+                navTab === 'users' ? navActive : navIdle
               }`}
             >
               <div className="flex items-center gap-3">
@@ -236,7 +237,7 @@ export const DashboardView = () => {
               </div>
               {sidebarOpen && (
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
-                  navTab === 'users' ? 'bg-[#0a0e1a]/30 text-[#0a0e1a]' : 'bg-[#1e2746] text-slate-300'
+                  navTab === 'users' ? navBadgeActive : navBadgeIdle
                 }`}>
                   {users.length}
                 </span>
@@ -247,9 +248,7 @@ export const DashboardView = () => {
             <button
               onClick={() => setNavTab('logs')}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                navTab === 'logs'
-                  ? 'bg-[#00d294] text-[#0a0e1a] font-bold shadow-lg shadow-[#00d294]/20'
-                  : 'text-slate-400 hover:text-white hover:bg-[#151c33]'
+                navTab === 'logs' ? navActive : navIdle
               }`}
             >
               <div className="flex items-center gap-3">
@@ -262,10 +261,14 @@ export const DashboardView = () => {
         </div>
 
         {/* Sidebar Footer Link */}
-        <div className="p-3 border-t border-[#1a2238]">
+        <div className={`p-3 border-t ${isLight ? 'border-teal-100' : 'border-white/5'}`}>
           <button
             onClick={() => setActiveTab('rooms')}
-            className="w-full py-2 px-3 rounded-xl border border-pink-500/30 hover:border-pink-500/60 bg-pink-500/10 text-pink-400 hover:text-pink-300 text-xs font-semibold flex items-center justify-center gap-2 transition-all"
+            className={`w-full py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
+              isLight
+                ? 'border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100'
+                : 'border-violet-400/30 hover:border-violet-400/60 bg-violet-500/10 text-violet-300 hover:text-violet-200'
+            }`}
           >
             {sidebarOpen ? (
               <>
@@ -281,7 +284,7 @@ export const DashboardView = () => {
 
       {/* MAIN RIGHT CONTAINER */}
       <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${
-        theme === 'light' ? 'bg-slate-50' : 'bg-[#0a0e1a]'
+        theme === 'light' ? 'bg-transparent' : 'bg-transparent'
       }`}>
 
         {/* DASHBOARD BODY CONTENT (Scrollable) */}
@@ -344,7 +347,7 @@ export const DashboardView = () => {
                 {/* Card 4: Foydalanuvchilar */}
                 <div className={`${cardClass} rounded-2xl p-5 flex items-center justify-between`}>
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-[#00d294]/15 border border-[#00d294]/30 flex items-center justify-center text-[#00d294]">
+                    <div className="w-12 h-12 rounded-xl bg-teal-400/15 border border-teal-400/30 flex items-center justify-center text-teal-400">
                       <Users className="w-6 h-6" />
                     </div>
                     <div>
@@ -388,7 +391,7 @@ export const DashboardView = () => {
                 {/* Left Panel: Kameralar Statusi Taqsimoti */}
                 <div className={`lg:col-span-2 ${cardClass} rounded-2xl p-6 space-y-4`}>
                   <h4 className={`text-sm font-bold flex items-center gap-2.5 ${textTitleClass}`}>
-                    <div className="p-1.5 rounded-lg bg-[#00d294]/15 text-[#00d294]">
+                    <div className="p-1.5 rounded-lg bg-teal-400/15 text-teal-400">
                       <Activity className="w-5 h-5" />
                     </div>
                     <span>Kameralar Oqimi Taqsimoti</span>
@@ -398,10 +401,10 @@ export const DashboardView = () => {
                     <div>
                       <div className={`flex justify-between mb-1 ${textSubClass}`}>
                         <span>RTSP Oqimlar (1080p 60fps)</span>
-                        <span className="text-[#00d294] font-bold">100%</span>
+                        <span className="text-teal-400 font-bold">100%</span>
                       </div>
                       <div className={`w-full h-2 rounded-full overflow-hidden ${isLight ? 'bg-slate-200' : 'bg-[#0a0e1a]'}`}>
-                        <div className="bg-[#00d294] h-full w-full"></div>
+                        <div className="bg-teal-400 h-full w-full"></div>
                       </div>
                     </div>
 
@@ -430,7 +433,7 @@ export const DashboardView = () => {
                 {/* Right Panel: Ijro Samaradorligi */}
                 <div className={`lg:col-span-1 ${cardClass} rounded-2xl p-6 flex flex-col justify-between`}>
                   <h4 className={`text-sm font-bold flex items-center gap-2.5 mb-4 ${textTitleClass}`}>
-                    <div className="p-1.5 rounded-lg bg-[#00d294]/15 text-[#00d294]">
+                    <div className="p-1.5 rounded-lg bg-teal-400/15 text-teal-400">
                       <CheckCircle2 className="w-5 h-5" />
                     </div>
                     <span>Tizim Barqarorligi</span>
@@ -438,7 +441,7 @@ export const DashboardView = () => {
 
                   <div className="grid grid-cols-2 gap-3 text-center">
                     <div className={`${subCardClass} p-4 rounded-xl`}>
-                      <span className="text-2xl font-black text-[#00d294]">99.9%</span>
+                      <span className="text-2xl font-black text-teal-400">99.9%</span>
                       <p className={`text-[10px] mt-1 font-mono ${textSubClass}`}>Uptime Ishonchlilik</p>
                     </div>
 
@@ -481,7 +484,7 @@ export const DashboardView = () => {
                       <tbody>
                         {cameras.slice(0, 4).map((c, idx) => (
                           <tr key={c.id} className={tableRowClass}>
-                            <td className={`${tableTdClass} text-center font-bold text-[#00d294]`}>{idx + 1}</td>
+                            <td className={`${tableTdClass} text-center font-bold text-teal-400`}>{idx + 1}</td>
                             <td className={`${tableTdClass} font-bold ${textTitleClass}`}>{c.name}</td>
                             <td className={`${tableTdClass} text-cyan-500 font-bold`}>{c.protocol}</td>
                             <td className={tableTdClass}>
@@ -500,12 +503,12 @@ export const DashboardView = () => {
                 <div className={`${cardClass} rounded-2xl p-5`}>
                   <div className="flex items-center justify-between mb-4">
                     <h4 className={`text-sm font-bold flex items-center gap-2.5 ${textTitleClass}`}>
-                      <div className="p-1.5 rounded-lg bg-[#00d294]/15 text-[#00d294]">
+                      <div className="p-1.5 rounded-lg bg-teal-400/15 text-teal-400">
                         <KeyRound className="w-5 h-5" />
                       </div>
                       <span>Foydalanuvchilar Loginlari</span>
                     </h4>
-                    <button onClick={() => setNavTab('users')} className="text-xs text-[#00d294] hover:underline font-mono font-bold">
+                    <button onClick={() => setNavTab('users')} className="text-xs text-teal-400 hover:underline font-mono font-bold">
                       Barchasi →
                     </button>
                   </div>
@@ -523,11 +526,11 @@ export const DashboardView = () => {
                       <tbody>
                         {users.slice(0, 4).map((u, idx) => (
                           <tr key={u.id} className={tableRowClass}>
-                            <td className={`${tableTdClass} text-center font-bold text-[#00d294]`}>{idx + 1}</td>
+                            <td className={`${tableTdClass} text-center font-bold text-teal-400`}>{idx + 1}</td>
                             <td className={`${tableTdClass} font-bold ${textTitleClass}`}>{u.username}</td>
                             <td className={`${tableTdClass} ${textSubClass}`}>••••••••</td>
                             <td className={tableTdClass}>
-                              <span className="px-2 py-0.5 rounded text-[10px] bg-[#00d294]/20 text-[#00d294] font-bold">
+                              <span className="px-2 py-0.5 rounded text-[10px] bg-teal-400/20 text-teal-400 font-bold">
                                 {u.role.toUpperCase()}
                               </span>
                             </td>
@@ -580,9 +583,9 @@ export const DashboardView = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200 dark:border-[#1e2746]">
                   <div>
                     <h3 className={`text-lg font-extrabold flex items-center gap-2 ${textTitleClass}`}>
-                      <Users className="w-5 h-5 text-[#00d294]" />
+                      <Users className="w-5 h-5 text-teal-400" />
                       Tizim Foydalanuvchilari Ro'yxati
-                      <span className="text-xs px-2.5 py-0.5 rounded-full font-mono font-bold bg-[#00d294]/20 text-[#00d294]">
+                      <span className="text-xs px-2.5 py-0.5 rounded-full font-mono font-bold bg-teal-400/20 text-teal-400">
                         {users.length} ta
                       </span>
                     </h3>
@@ -596,7 +599,7 @@ export const DashboardView = () => {
                       setUserMsg(null);
                       setIsAddUserModalOpen(true);
                     }}
-                    className="px-4 py-2.5 bg-[#00d294] hover:bg-[#00b882] text-[#0a0e1a] font-extrabold text-xs rounded-xl shadow-lg shadow-[#00d294]/20 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                    className={primaryBtn}
                   >
                     <Plus className="w-4 h-4 stroke-[3]" />
                     <span>Qo'shish</span>
@@ -619,10 +622,10 @@ export const DashboardView = () => {
                     <tbody>
                       {users.map((u, idx) => (
                         <tr key={u.id} className={tableRowClass}>
-                          <td className={`${tableTdClass} text-center font-bold text-[#00d294]`}>{idx + 1}</td>
+                          <td className={`${tableTdClass} text-center font-bold text-teal-400`}>{idx + 1}</td>
                           <td className={`${tableTdClass} font-bold ${textTitleClass}`}>
                             <div className="flex items-center gap-2">
-                              <span className="w-2 h-2 rounded-full bg-[#00d294]"></span>
+                              <span className="w-2 h-2 rounded-full bg-teal-400"></span>
                               {u.username}
                             </div>
                           </td>
@@ -631,7 +634,7 @@ export const DashboardView = () => {
                               <span>{visiblePasswords[u.id] ? u.password : '••••••••'}</span>
                               <button
                                 onClick={() => togglePasswordVisibility(u.id)}
-                                className="text-slate-400 hover:text-[#00d294] p-1.5 rounded-lg transition-colors hover:bg-[#00d294]/10 cursor-pointer"
+                                className="text-slate-400 hover:text-teal-400 p-1.5 rounded-lg transition-colors hover:bg-teal-400/10 cursor-pointer"
                                 title="Parolni ko'rsatish/berkitish"
                               >
                                 {visiblePasswords[u.id] ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
@@ -640,7 +643,7 @@ export const DashboardView = () => {
                           </td>
                           <td className={tableTdClass}>
                             <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold ${
-                              u.role === 'admin' ? 'bg-[#00d294]/20 text-[#00d294] border border-[#00d294]/40' : 'bg-slate-200 text-slate-700 dark:bg-[#1e2746] dark:text-slate-300'
+                              u.role === 'admin' ? 'bg-teal-400/20 text-teal-400 border border-teal-400/40' : 'bg-slate-200 text-slate-700 dark:bg-[#1e2746] dark:text-slate-300'
                             }`}>
                               {u.role.toUpperCase()}
                             </span>
@@ -678,9 +681,9 @@ export const DashboardView = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200 dark:border-[#1e2746]">
                   <div>
                     <h3 className={`text-lg font-extrabold flex items-center gap-2 ${textTitleClass}`}>
-                      <Server className="w-5 h-5 text-[#00d294]" />
+                      <Server className="w-5 h-5 text-teal-400" />
                       Mavjud Kameralar Ro'yxati
-                      <span className="text-xs px-2.5 py-0.5 rounded-full font-mono font-bold bg-[#00d294]/20 text-[#00d294]">
+                      <span className="text-xs px-2.5 py-0.5 rounded-full font-mono font-bold bg-teal-400/20 text-teal-400">
                         {cameras.length} ta
                       </span>
                     </h3>
@@ -693,7 +696,7 @@ export const DashboardView = () => {
                     <button
                       onClick={() => setShowIpAddresses(!showIpAddresses)}
                       className={`px-3 py-2 rounded-xl text-xs font-mono border transition-all ${
-                        showIpAddresses ? 'bg-[#00d294]/20 border-[#00d294]/40 text-[#00d294] font-bold' : isLight ? 'bg-slate-100 border-slate-300 text-slate-600' : 'bg-[#0a0e1a] border-[#1e2746] text-slate-400'
+                        showIpAddresses ? 'bg-teal-400/20 border-teal-400/40 text-teal-400 font-bold' : isLight ? 'bg-slate-100 border-slate-300 text-slate-600' : 'bg-[#0a0e1a] border-[#1e2746] text-slate-400'
                       }`}
                     >
                       {showIpAddresses ? '👁️ IP Ko\'rinmoqda' : '🙈 IP Berkitilgan'}
@@ -704,7 +707,7 @@ export const DashboardView = () => {
                         setCamMsg(null);
                         setIsAddCamModalOpen(true);
                       }}
-                      className="px-4 py-2.5 bg-[#00d294] hover:bg-[#00b882] text-[#0a0e1a] font-extrabold text-xs rounded-xl shadow-lg shadow-[#00d294]/20 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                      className={primaryBtn}
                     >
                       <Plus className="w-4 h-4 stroke-[3]" />
                       <span>Qo'shish</span>
@@ -730,7 +733,7 @@ export const DashboardView = () => {
                         const associatedRoom = rooms.find(r => r.id === cam.roomId);
                         return (
                           <tr key={cam.id} className={tableRowClass}>
-                            <td className={`${tableTdClass} text-center font-bold text-[#00d294]`}>{idx + 1}</td>
+                            <td className={`${tableTdClass} text-center font-bold text-teal-400`}>{idx + 1}</td>
                             <td className={`${tableTdClass} font-bold ${textTitleClass}`}>{cam.name}</td>
                             <td className={`${tableTdClass} text-cyan-500 font-bold`}>
                               {showIpAddresses ? `${cam.ip}:${cam.port}` : '192.168.x.***'}
@@ -774,7 +777,7 @@ export const DashboardView = () => {
           {navTab === 'logs' && (
             <div className={`${cardClass} rounded-2xl p-6 space-y-4`}>
               <h3 className={`text-base font-bold flex items-center gap-2 ${textTitleClass}`}>
-                <Activity className="w-4 h-4 text-[#00d294]" />
+                <Activity className="w-4 h-4 text-teal-400" />
                 Tizim Jurnali va Xavfsizlik Loglari
               </h3>
 
@@ -792,10 +795,10 @@ export const DashboardView = () => {
                   <tbody>
                     {logs.map((log, idx) => (
                       <tr key={log.id} className={tableRowClass}>
-                        <td className={`${tableTdClass} text-center font-bold text-[#00d294]`}>{idx + 1}</td>
+                        <td className={`${tableTdClass} text-center font-bold text-teal-400`}>{idx + 1}</td>
                         <td className={`${tableTdClass} ${textSubClass} whitespace-nowrap`}>{log.timestamp}</td>
                         <td className={tableTdClass}>
-                          <span className={`px-2 py-0.5 rounded text-[#00d294] border text-[10px] font-bold ${isLight ? 'bg-slate-200 border-slate-300' : 'bg-[#151c33] border-[#222c4a]'}`}>
+                          <span className={`px-2 py-0.5 rounded text-teal-400 border text-[10px] font-bold ${isLight ? 'bg-slate-200 border-slate-300' : 'bg-[#151c33] border-[#222c4a]'}`}>
                             {log.type.toUpperCase()}
                           </span>
                         </td>
@@ -818,7 +821,7 @@ export const DashboardView = () => {
                 {/* Modal Header */}
                 <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-200 dark:border-[#1e2746]">
                   <h3 className={`text-base font-bold flex items-center gap-2 ${textTitleClass}`}>
-                    <KeyRound className="w-5 h-5 text-[#00d294]" />
+                    <KeyRound className="w-5 h-5 text-teal-400" />
                     Foydalanuvchiga Login-Parol Berish
                   </h3>
                   <button
@@ -900,7 +903,7 @@ export const DashboardView = () => {
 
                     <button
                       type="submit"
-                      className="flex-1 py-2.5 px-4 bg-[#00d294] hover:bg-[#00b882] text-[#0a0e1a] font-extrabold text-xs rounded-xl shadow-lg shadow-[#00d294]/20 transition-all cursor-pointer"
+                      className="flex-1 py-2.5 px-4 bg-gradient-to-r from-teal-400 via-sky-400 to-violet-400 hover:from-teal-300 hover:via-sky-300 hover:to-violet-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-teal-500/20 transition-all cursor-pointer"
                     >
                       LOGIN-PAROL SAQLASH
                     </button>
@@ -917,7 +920,7 @@ export const DashboardView = () => {
                 {/* Modal Header */}
                 <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-200 dark:border-[#1e2746]">
                   <h3 className={`text-base font-bold flex items-center gap-2 ${textTitleClass}`}>
-                    <CameraIcon className="w-5 h-5 text-[#00d294]" />
+                    <CameraIcon className="w-5 h-5 text-teal-400" />
                     Yangi Kamera Qo'shish
                   </h3>
                   <button
@@ -970,7 +973,7 @@ export const DashboardView = () => {
                       <button
                         type="button"
                         onClick={handleTestIp}
-                        className={`px-3.5 py-2.5 font-mono text-xs rounded-xl border shrink-0 text-[#00d294] font-bold cursor-pointer ${isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#151c33] border-[#222c4a]'}`}
+                        className={`px-3.5 py-2.5 font-mono text-xs rounded-xl border shrink-0 text-teal-400 font-bold cursor-pointer ${isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#151c33] border-[#222c4a]'}`}
                       >
                         Ping Test
                       </button>
@@ -1048,7 +1051,7 @@ export const DashboardView = () => {
 
                     <button
                       type="submit"
-                      className="flex-1 py-2.5 px-4 bg-[#00d294] hover:bg-[#00b882] text-[#0a0e1a] font-extrabold text-xs rounded-xl shadow-lg shadow-[#00d294]/20 transition-all cursor-pointer"
+                      className="flex-1 py-2.5 px-4 bg-gradient-to-r from-teal-400 via-sky-400 to-violet-400 hover:from-teal-300 hover:via-sky-300 hover:to-violet-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-teal-500/20 transition-all cursor-pointer"
                     >
                       KAMERANI SAQLASH
                     </button>

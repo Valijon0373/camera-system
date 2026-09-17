@@ -63,25 +63,25 @@ export const RoomsView = () => {
     <div className="space-y-6">
       {/* Top Action Bar */}
       <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border transition-colors ${
-        isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-900/60 border-slate-800 backdrop-blur-md'
+        isLight ? 'bg-white/90 border-teal-100 shadow-sm shadow-teal-900/5' : 'bg-white/[0.03] border-white/10 backdrop-blur-md'
       }`}>
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center shrink-0">
-            <Building className="w-6 h-6 text-cyan-500" />
+          <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${isLight ? 'bg-teal-50 border border-teal-200' : 'bg-teal-400/15 border border-teal-400/30'}`}>
+            <Building className={`w-6 h-6 ${isLight ? 'text-teal-600' : 'text-teal-300'}`} />
           </div>
           <div>
             <h2 className={`text-xl font-extrabold tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
               Xonalar va IP Kameralar Kuzatuvi
             </h2>
             <p className={`text-xs mt-0.5 font-mono ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-              Jami xonalar: <span className="text-cyan-500 font-bold">{rooms.length} ta</span> | IP Kameralar: <span className="text-emerald-500 font-bold">{cameras.length} ta</span>
+              Jami xonalar: <span className={`${isLight ? 'text-teal-600' : 'text-teal-300'} font-bold`}>{rooms.length} ta</span> | IP Kameralar: <span className="text-emerald-500 font-bold">{cameras.length} ta</span>
             </p>
           </div>
         </div>
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="px-4.5 py-2.5 bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2 self-stretch sm:self-auto justify-center cursor-pointer"
+          className="px-4.5 py-2.5 bg-gradient-to-r from-teal-400 via-sky-400 to-violet-400 hover:from-teal-300 hover:via-sky-300 hover:to-violet-300 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-teal-500/20 transition-all flex items-center gap-2 self-stretch sm:self-auto justify-center cursor-pointer"
         >
           <Plus className="w-5 h-5 stroke-[3]" />
           <span>YANGI XONA QO'SHISH</span>
@@ -90,12 +90,12 @@ export const RoomsView = () => {
 
       {/* Empty State */}
       {filteredRooms.length === 0 && (
-        <div className="text-center py-16 bg-slate-900/30 border border-slate-800/80 rounded-3xl">
-          <div className="w-16 h-16 rounded-2xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center mx-auto mb-3">
-            <Building className="w-8 h-8 text-slate-400 animate-pulse" />
+        <div className={`text-center py-16 rounded-3xl border ${isLight ? 'bg-white border-slate-200' : 'bg-white/[0.03] border-white/10'}`}>
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 ${isLight ? 'bg-slate-50 border border-slate-200' : 'bg-white/5 border border-white/10'}`}>
+            <Building className={`w-8 h-8 animate-pulse ${isLight ? 'text-slate-400' : 'text-slate-400'}`} />
           </div>
-          <h3 className="text-base font-bold text-slate-300">Xonalar topilmadi</h3>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 font-mono">
+          <h3 className={`text-base font-bold ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>Xonalar topilmadi</h3>
+          <p className={`text-xs max-w-sm mx-auto mt-1 font-mono ${isLight ? 'text-slate-500' : 'text-slate-500'}`}>
             Qidiruv so'rovi bo'yicha hech qanday xona mos kelmadi yoki hali xonalar qo'shilmagan.
           </p>
         </div>
@@ -111,16 +111,18 @@ export const RoomsView = () => {
           return (
             <div
               key={room.id}
-              className="glass-card rounded-2xl border border-slate-800/80 p-5 shadow-xl hover:border-slate-700/80 transition-all group flex flex-col justify-between"
+              className={`glass-card rounded-2xl p-5 shadow-xl transition-all group flex flex-col justify-between ${
+                isLight ? 'border-slate-200 hover:border-teal-300' : 'border-white/10 hover:border-teal-400/40'
+              }`}
             >
               {/* Card Header (Room Number & Room Name edit area) */}
               <div className="mb-4 flex items-start justify-between gap-3">
                 {isEditing ? (
                   /* Inline Editing Form */
-                  <div className="flex-1 space-y-2 bg-slate-950/80 p-3.5 rounded-xl border border-cyan-500/40">
+                  <div className={`flex-1 space-y-2 p-3.5 rounded-xl border ${isLight ? 'bg-teal-50/70 border-teal-200' : 'bg-slate-950/80 border-teal-400/40'}`}>
                     <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <label className="text-[10px] font-mono text-cyan-400">XONA RAQAMI</label>
+                        <label className={`text-[10px] font-mono ${isLight ? 'text-teal-700' : 'text-teal-300'}`}>XONA RAQAMI</label>
                         <input
                           type="text"
                           value={editNumber}
@@ -130,7 +132,7 @@ export const RoomsView = () => {
                         />
                       </div>
                       <div className="col-span-2">
-                        <label className="text-[10px] font-mono text-cyan-400">XONA NOMI</label>
+                        <label className={`text-[10px] font-mono ${isLight ? 'text-teal-700' : 'text-teal-300'}`}>XONA NOMI</label>
                         <input
                           type="text"
                           value={editName}
@@ -171,17 +173,17 @@ export const RoomsView = () => {
                   /* Standard Display Mode */
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="px-2.5 py-0.5 rounded-md bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/40 text-cyan-300 font-mono font-bold text-xs">
+                      <span className={`px-2.5 py-0.5 rounded-md font-mono font-bold text-xs ${isLight ? 'bg-teal-50 border border-teal-200 text-teal-700' : 'bg-gradient-to-r from-teal-500/20 to-sky-500/20 border border-teal-400/40 text-teal-200'}`}>
                         XONA № {room.number}
                       </span>
                       {roomCamera && (
-                        <span className="flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                        <span className={`flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-0.5 rounded-md ${isLight ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'}`}>
                           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                           {showIpAddresses ? `IP: ${roomCamera.ip}` : 'KAMERA ONLINE'}
                         </span>
                       )}
                     </div>
-                    <h3 className={`text-lg font-extrabold transition-colors ${isLight ? 'text-slate-900 group-hover:text-cyan-600' : 'text-white group-hover:text-cyan-300'}`}>
+                    <h3 className={`text-lg font-extrabold transition-colors ${isLight ? 'text-slate-900 group-hover:text-teal-700' : 'text-white group-hover:text-teal-200'}`}>
                       {room.name}
                     </h3>
                     <p className={`text-xs font-mono mt-0.5 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
@@ -195,14 +197,14 @@ export const RoomsView = () => {
                   <div className="flex items-center gap-1.5 shrink-0">
                     <button
                       onClick={() => startEdit(room)}
-                      className="p-2 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 text-slate-400 hover:text-cyan-300 transition-all hover:scale-105"
+                      className={`p-2 rounded-xl border transition-all hover:scale-105 ${isLight ? 'bg-slate-50 border-slate-200 hover:border-teal-400 text-slate-500 hover:text-teal-600' : 'bg-white/5 border-white/10 hover:border-teal-400/50 text-slate-400 hover:text-teal-200'}`}
                       title="Xona raqami va nomini tahrirlash"
                     >
                       <Edit3 className="w-4.5 h-4.5" />
                     </button>
                     <button
                       onClick={() => deleteRoom(room.id)}
-                      className="p-2 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-red-500/50 text-slate-400 hover:text-red-400 transition-all hover:scale-105"
+                      className={`p-2 rounded-xl border transition-all hover:scale-105 ${isLight ? 'bg-slate-50 border-slate-200 hover:border-rose-300 text-slate-500 hover:text-rose-600' : 'bg-white/5 border-white/10 hover:border-rose-400/50 text-slate-400 hover:text-rose-300'}`}
                       title="Xonani o'chirish"
                     >
                       <Trash2 className="w-4.5 h-4.5" />
@@ -220,12 +222,12 @@ export const RoomsView = () => {
                     roomNumber={room.number}
                   />
                 ) : (
-                  <div className="aspect-video bg-slate-950/80 border border-dashed border-slate-800 rounded-xl flex flex-col items-center justify-center p-6 text-center">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center mb-2">
-                      <CameraIcon className="w-6 h-6 text-slate-600" />
+                  <div className={`aspect-video border border-dashed rounded-xl flex flex-col items-center justify-center p-6 text-center ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-950/80 border-white/10'}`}>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-2 ${isLight ? 'bg-white border border-slate-200' : 'bg-white/5 border border-white/10'}`}>
+                      <CameraIcon className={`w-6 h-6 ${isLight ? 'text-slate-400' : 'text-slate-600'}`} />
                     </div>
-                    <p className="text-xs font-bold text-slate-400">Kamera biriktirilmagan</p>
-                    <p className="text-[11px] text-slate-600 font-mono mt-1">
+                    <p className={`text-xs font-bold ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Kamera biriktirilmagan</p>
+                    <p className={`text-[11px] font-mono mt-1 ${isLight ? 'text-slate-400' : 'text-slate-600'}`}>
                       Dashboard bo'limi orqali bu xonaga IP kamera biriktirishingiz mumkin.
                     </p>
                   </div>
@@ -238,16 +240,16 @@ export const RoomsView = () => {
 
       {/* Modal: Yangi Xona Qo'shish */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="relative w-full max-w-md glass-panel border border-slate-800 rounded-3xl p-6 shadow-2xl">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Building className="w-4 h-4 text-cyan-400" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#05080f]/80 backdrop-blur-sm">
+          <div className={`relative w-full max-w-md glass-panel rounded-3xl p-6 shadow-2xl ${isLight ? 'border-slate-200' : 'border-white/10'}`}>
+            <div className={`flex items-center justify-between pb-4 border-b mb-4 ${isLight ? 'border-slate-200' : 'border-white/10'}`}>
+              <h3 className={`text-base font-bold flex items-center gap-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                <Building className={`w-4 h-4 ${isLight ? 'text-teal-600' : 'text-teal-300'}`} />
                 Yangi Xona Yaratish
               </h3>
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+                className={`p-1 rounded-lg ${isLight ? 'text-slate-500 hover:text-slate-900 hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -255,7 +257,7 @@ export const RoomsView = () => {
 
             <form onSubmit={handleAddSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-mono text-slate-300 uppercase mb-1">
+                <label className={`block text-xs font-mono uppercase mb-1 ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
                   Xona Raqami *
                 </label>
                 <input
@@ -264,12 +266,12 @@ export const RoomsView = () => {
                   value={newRoomNumber}
                   onChange={(e) => setNewRoomNumber(e.target.value)}
                   placeholder="Masalan: 402"
-                  className="w-full px-3.5 py-2.5 text-xs font-mono glass-input rounded-xl focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-3.5 py-2.5 text-xs font-mono glass-input rounded-xl focus:ring-2 focus:ring-teal-400/40"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-slate-300 uppercase mb-1">
+                <label className={`block text-xs font-mono uppercase mb-1 ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
                   Xona Nomi *
                 </label>
                 <input
@@ -278,12 +280,12 @@ export const RoomsView = () => {
                   value={newRoomName}
                   onChange={(e) => setNewRoomName(e.target.value)}
                   placeholder="Masalan: Axborot Texnologiyalari Markazi"
-                  className="w-full px-3.5 py-2.5 text-xs font-mono glass-input rounded-xl focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-3.5 py-2.5 text-xs font-mono glass-input rounded-xl focus:ring-2 focus:ring-teal-400/40"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-slate-300 uppercase mb-1">
+                <label className={`block text-xs font-mono uppercase mb-1 ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
                   Xona Izohi / Qisqa Tavsifi
                 </label>
                 <input
@@ -291,7 +293,7 @@ export const RoomsView = () => {
                   value={newRoomDesc}
                   onChange={(e) => setNewRoomDesc(e.target.value)}
                   placeholder="Masalan: 4-qavat, o'ng qanot"
-                  className="w-full px-3.5 py-2.5 text-xs font-mono glass-input rounded-xl focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-3.5 py-2.5 text-xs font-mono glass-input rounded-xl focus:ring-2 focus:ring-teal-400/40"
                 />
               </div>
 
@@ -299,13 +301,13 @@ export const RoomsView = () => {
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 text-xs font-mono text-slate-400 hover:text-white bg-slate-900 rounded-xl"
+                  className={`px-4 py-2 text-xs font-mono rounded-xl ${isLight ? 'text-slate-500 hover:text-slate-800 bg-slate-100' : 'text-slate-400 hover:text-white bg-white/5'}`}
                 >
                   Bekor qilish
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 text-xs font-bold text-slate-950 bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 rounded-xl shadow-lg shadow-cyan-500/20"
+                  className="px-5 py-2 text-xs font-bold text-slate-950 bg-gradient-to-r from-teal-400 via-sky-400 to-violet-400 hover:from-teal-300 hover:via-sky-300 hover:to-violet-300 rounded-xl shadow-lg shadow-teal-500/20"
                 >
                   SAQLASH
                 </button>

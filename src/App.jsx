@@ -37,7 +37,7 @@ const MainContent = () => {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col transition-colors ${theme === 'light' ? 'bg-slate-100 text-slate-900' : 'bg-[#090d16] text-slate-100'}`}>
+    <div className={`min-h-screen flex flex-col transition-colors ${theme === 'light' ? 'app-shell-light text-slate-900' : 'app-shell-dark text-slate-100'}`}>
       <Navbar />
 
       <main className={`flex-1 w-full ${activeTab === 'dashboard' ? '' : 'px-4 sm:px-6 lg:px-8 py-6'}`}>
@@ -47,7 +47,7 @@ const MainContent = () => {
 
       {/* Footer */}
       <footer className={`border-t py-4 text-center text-xs font-mono transition-colors ${
-        theme === 'light' ? 'border-slate-200 bg-white text-slate-600' : 'border-slate-800/80 bg-slate-950 text-slate-500'
+        theme === 'light' ? 'border-teal-100 bg-white/80 text-slate-500' : 'border-white/5 bg-[#05080f]/90 text-slate-500'
       }`}>
         <p>UrSPI Camera & Room Control System &copy; 2026. Barcha huquqlar saqlangan.</p>
       </footer>
