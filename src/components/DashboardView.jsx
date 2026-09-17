@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { RoomsView } from './RoomsView';
+import { MdOutlineEdit } from 'react-icons/md';
 import {
   LayoutDashboard,
   Users,
@@ -13,6 +14,8 @@ import {
   Sparkles,
   User,
   Plus,
+  Edit3,
+  Check,
   Trash2,
   Eye,
   EyeOff,
@@ -36,9 +39,11 @@ export const DashboardView = () => {
     currentUser,
     users,
     addUser,
+    updateUser,
     deleteUser,
     cameras,
     addCamera,
+    updateCamera,
     deleteCamera,
     rooms,
     testCameraIp,
@@ -75,11 +80,88 @@ export const DashboardView = () => {
   const [camMsg, setCamMsg] = useState(null);
   const [pingResult, setPingResult] = useState(null);
 
+  // Camera inline edit states
+  const [editingCamId, setEditingCamId] = useState(null);
+  const [editCamName, setEditCamName] = useState('');
+  const [editCamIp, setEditCamIp] = useState('');
+  const [editCamPort, setEditCamPort] = useState('554');
+  const [editCamProtocol, setEditCamProtocol] = useState('RTSP');
+  const [editCamRoomId, setEditCamRoomId] = useState('');
+
+  const startEditCam = (cam) => {
+    setEditingCamId(cam.id);
+    setEditCamName(cam.name);
+    setEditCamIp(cam.ip);
+    setEditCamPort(cam.port || '554');
+    setEditCamProtocol(cam.protocol || 'RTSP');
+    setEditCamRoomId(cam.roomId || '');
+  };
+
+  const saveEditCam = (id) => {
+    if (!editCamName || !editCamIp) return;
+    updateCamera(id, {
+      name: editCamName.trim(),
+      ip: editCamIp.trim(),
+      port: editCamPort.trim(),
+      protocol: editCamProtocol,
+      roomId: editCamRoomId
+    });
+    setEditingCamId(null);
+  };
+
+  const cancelEditCam = () => {
+    setEditingCamId(null);
+  };
+
   // Password visibility map
   const [visiblePasswords, setVisiblePasswords] = useState({});
 
   const togglePasswordVisibility = (id) => {
     setVisiblePasswords(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  // User Edit Modal state
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
+  const [editingUserObj, setEditingUserObj] = useState(null);
+  const [editFullName, setEditFullName] = useState('');
+  const [editUsername, setEditUsername] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [editRole, setEditRole] = useState('operator');
+  const [editUserMsg, setEditUserMsg] = useState(null);
+
+  const handleStartEditUser = (u) => {
+    setEditingUserObj(u);
+    setEditFullName(u.fullName || u.username);
+    setEditUsername(u.username);
+    setEditPassword(u.password);
+    setEditRole(u.role || 'operator');
+    setEditUserMsg(null);
+    setIsEditUserModalOpen(true);
+  };
+
+  const handleSaveEditUser = (e) => {
+    e.preventDefault();
+    if (!editingUserObj) return;
+    if (!editUsername || !editPassword) {
+      setEditUserMsg({ type: 'error', text: 'Barcha maydonlarni to\'ldiring!' });
+      return;
+    }
+    const res = updateUser(editingUserObj.id, {
+      fullName: editFullName.trim(),
+      username: editUsername.trim(),
+      password: editPassword.trim(),
+      role: editRole
+    });
+    if (res.success) {
+      setEditUserMsg({ type: 'success', text: `Foydalanuvchi "${editFullName || editUsername}" muvaffaqiyatli yangilandi!` });
+      setTimeout(() => {
+        setIsEditUserModalOpen(false);
+        setEditUserMsg(null);
+        setEditingUserObj(null);
+      }, 800);
+    } else {
+      setEditUserMsg({ type: 'error', text: res.message || 'Xatolik yuz berdi' });
+    }
   };
 
   // Handle Add User
@@ -656,17 +738,26 @@ export const DashboardView = () => {
                           </td>
                           <td className={`${tableTdClass} ${textSubClass}`}>{u.createdAt}</td>
                           <td className={`${tableTdClass} text-right`}>
-                            {u.username !== 'admin' ? (
+                            <div className="flex items-center justify-end gap-1.5">
                               <button
-                                onClick={() => deleteUser(u.id)}
-                                className={`p-2 rounded-xl border hover:border-red-500/50 text-slate-400 hover:text-red-500 transition-all hover:scale-105 cursor-pointer ${isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#0a0e1a] border-[#1e2746]'}`}
-                                title="Hisobni o'chirish"
+                                onClick={() => handleStartEditUser(u)}
+                                className={`p-2 rounded-xl border hover:border-teal-500/50 text-slate-400 hover:text-teal-400 transition-all hover:scale-105 cursor-pointer ${isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#0a0e1a] border-[#1e2746]'}`}
+                                title="Foydalanuvchini tahrirlash (Modal)"
                               >
-                                <Trash2 className="w-4.5 h-4.5" />
+                                <MdOutlineEdit className="w-6 h-6" />
                               </button>
-                            ) : (
-                              <span className="text-[10px] text-slate-400 font-sans italic">Asosiy admin</span>
-                            )}
+                              {u.username !== 'admin' ? (
+                                <button
+                                  onClick={() => deleteUser(u.id)}
+                                  className={`p-2 rounded-xl border hover:border-red-500/50 text-slate-400 hover:text-red-500 transition-all hover:scale-105 cursor-pointer ${isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#0a0e1a] border-[#1e2746]'}`}
+                                  title="Hisobni o'chirish"
+                                >
+                                  <Trash2 className="w-4.5 h-4.5" />
+                                </button>
+                              ) : (
+                                <span className="text-[10px] text-slate-400 font-sans italic px-1">Main Admin</span>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -737,6 +828,89 @@ export const DashboardView = () => {
                     <tbody>
                       {cameras.map((cam, idx) => {
                         const associatedRoom = rooms.find(r => r.id === cam.roomId);
+                        const isEditingCam = editingCamId === cam.id;
+
+                        if (isEditingCam) {
+                          return (
+                            <tr key={cam.id} className={`${tableRowClass} bg-teal-500/10`}>
+                              <td className={`${tableTdClass} text-center font-bold text-teal-400`}>{idx + 1}</td>
+                              <td className={tableTdClass}>
+                                <input
+                                  type="text"
+                                  value={editCamName}
+                                  onChange={(e) => setEditCamName(e.target.value)}
+                                  className="w-full px-2 py-1 text-xs font-mono rounded border border-teal-400/40 bg-slate-900 text-white"
+                                  placeholder="Kamera nomi"
+                                />
+                              </td>
+                              <td className={tableTdClass}>
+                                <div className="flex items-center gap-1">
+                                  <input
+                                    type="text"
+                                    value={editCamIp}
+                                    onChange={(e) => setEditCamIp(e.target.value)}
+                                    className="w-24 px-2 py-1 text-xs font-mono rounded border border-teal-400/40 bg-slate-900 text-cyan-400 font-bold"
+                                    placeholder="IP"
+                                  />
+                                  <span>:</span>
+                                  <input
+                                    type="text"
+                                    value={editCamPort}
+                                    onChange={(e) => setEditCamPort(e.target.value)}
+                                    className="w-12 px-2 py-1 text-xs font-mono rounded border border-teal-400/40 bg-slate-900 text-white"
+                                    placeholder="554"
+                                  />
+                                </div>
+                              </td>
+                              <td className={tableTdClass}>
+                                <select
+                                  value={editCamProtocol}
+                                  onChange={(e) => setEditCamProtocol(e.target.value)}
+                                  className="px-2 py-1 text-xs font-mono rounded border border-teal-400/40 bg-slate-900 text-white"
+                                >
+                                  <option value="RTSP">RTSP</option>
+                                  <option value="HTTP">HTTP</option>
+                                  <option value="HLS">HLS</option>
+                                  <option value="MJPEG">MJPEG</option>
+                                </select>
+                              </td>
+                              <td className={tableTdClass}>
+                                <select
+                                  value={editCamRoomId}
+                                  onChange={(e) => setEditCamRoomId(e.target.value)}
+                                  className="w-full px-2 py-1 text-xs font-mono rounded border border-teal-400/40 bg-slate-900 text-white"
+                                >
+                                  <option value="">Biriktirilmagan</option>
+                                  {rooms.map(r => (
+                                    <option key={r.id} value={r.id}>№ {r.number} ({r.name})</option>
+                                  ))}
+                                </select>
+                              </td>
+                              <td className={tableTdClass}>
+                                <span className="text-[10px] text-amber-400 font-bold animate-pulse">Tahrirlanmoqda...</span>
+                              </td>
+                              <td className={`${tableTdClass} text-right`}>
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    onClick={cancelEditCam}
+                                    className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white cursor-pointer"
+                                    title="Bekor qilish"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => saveEditCam(cam.id)}
+                                    className="p-1.5 rounded-lg bg-emerald-400 text-slate-950 font-bold hover:bg-emerald-300 cursor-pointer"
+                                    title="Saqlash"
+                                  >
+                                    <Check className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        }
+
                         return (
                           <tr key={cam.id} className={tableRowClass}>
                             <td className={`${tableTdClass} text-center font-bold text-teal-400`}>{idx + 1}</td>
@@ -755,13 +929,22 @@ export const DashboardView = () => {
                               </span>
                             </td>
                             <td className={`${tableTdClass} text-right`}>
-                              <button
-                                onClick={() => deleteCamera(cam.id)}
-                                className={`p-2 rounded-xl border hover:border-red-500/50 text-slate-400 hover:text-red-500 transition-all hover:scale-105 cursor-pointer ${isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#0a0e1a] border-[#1e2746]'}`}
-                                title="Kamerani o'chirish"
-                              >
-                                <Trash2 className="w-4.5 h-4.5" />
-                              </button>
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  onClick={() => startEditCam(cam)}
+                                  className={`p-2 rounded-xl border hover:border-teal-500/50 text-slate-400 hover:text-teal-400 transition-all hover:scale-105 cursor-pointer ${isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#0a0e1a] border-[#1e2746]'}`}
+                                  title="Kamera sozlamalarini tahrirlash"
+                                >
+                                  <MdOutlineEdit className="w-6 h-6" />
+                                </button>
+                                <button
+                                  onClick={() => deleteCamera(cam.id)}
+                                  className={`p-2 rounded-xl border hover:border-red-500/50 text-slate-400 hover:text-red-500 transition-all hover:scale-105 cursor-pointer ${isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#0a0e1a] border-[#1e2746]'}`}
+                                  title="Kamerani o'chirish"
+                                >
+                                  <Trash2 className="w-4.5 h-4.5" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         );
@@ -1074,6 +1257,119 @@ export const DashboardView = () => {
                       className="flex-1 py-2.5 px-4 bg-gradient-to-r from-teal-400 via-sky-400 to-violet-400 hover:from-teal-300 hover:via-sky-300 hover:to-violet-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-teal-500/20 transition-all cursor-pointer"
                     >
                       KAMERANI SAQLASH
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL: FOYDALANUVCHINI TAHRIRLASH */}
+          {isEditUserModalOpen && editingUserObj && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+              <div className={`${cardClass} w-full max-w-md rounded-2xl p-6 shadow-2xl relative border border-slate-200 dark:border-[#1e2746]`}>
+                {/* Modal Header */}
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-200 dark:border-[#1e2746]">
+                  <h3 className={`text-base font-bold flex items-center gap-2 ${textTitleClass}`}>
+                    <MdOutlineEdit className="w-5 h-5 text-teal-400" />
+                    Foydalanuvchi Ma'lumotlarini Tahrirlash
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setIsEditUserModalOpen(false);
+                      setEditUserMsg(null);
+                    }}
+                    className={`p-1.5 rounded-xl transition-colors ${isLight ? 'hover:bg-slate-100 text-slate-500' : 'hover:bg-[#151c33] text-slate-400 hover:text-white'}`}
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {editUserMsg && (
+                  <div className={`p-3 mb-4 rounded-xl text-xs font-medium ${
+                    editUserMsg.type === 'success' ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-500' : 'bg-red-500/15 border border-red-500/30 text-red-500'
+                  }`}>
+                    {editUserMsg.text}
+                  </div>
+                )}
+
+                <form onSubmit={handleSaveEditUser} className="space-y-4">
+                  <div>
+                    <label className={labelClass}>
+                      Ism Familiyasi (F.I.SH) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editFullName}
+                      onChange={(e) => setEditFullName(e.target.value)}
+                      placeholder="masalan: Sardor Ikromov"
+                      className={`w-full px-3.5 py-2.5 text-xs font-mono rounded-xl outline-none ${inputClass}`}
+                      autoFocus
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>
+                      Login (Username) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editUsername}
+                      onChange={(e) => setEditUsername(e.target.value)}
+                      placeholder="masalan: operator_nodir"
+                      className={`w-full px-3.5 py-2.5 text-xs font-mono rounded-xl outline-none ${inputClass}`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>
+                      Maxfiy Parol *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editPassword}
+                      onChange={(e) => setEditPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className={`w-full px-3.5 py-2.5 text-xs font-mono rounded-xl outline-none ${inputClass}`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>
+                      Foydalanuvchi Roli
+                    </label>
+                    <select
+                      value={editRole}
+                      onChange={(e) => setEditRole(e.target.value)}
+                      className={`w-full px-3.5 py-2.5 text-xs font-mono rounded-xl outline-none ${inputClass}`}
+                    >
+                      <option value="operator">Operator (Kuzatuv va xonalar)</option>
+                      <option value="admin">Administrator (To'liq huquqlar)</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditUserModalOpen(false);
+                        setEditUserMsg(null);
+                      }}
+                      className={`flex-1 py-2.5 px-4 font-bold text-xs rounded-xl border transition-all ${
+                        isLight ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700' : 'bg-[#151c33] hover:bg-[#1c2646] border-[#222c4a] text-slate-300'
+                      }`}
+                    >
+                      Bekor qilish
+                    </button>
+
+                    <button
+                      type="submit"
+                      className="flex-1 py-2.5 px-4 bg-gradient-to-r from-teal-400 via-sky-400 to-violet-400 hover:from-teal-300 hover:via-sky-300 hover:to-violet-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-teal-500/20 transition-all cursor-pointer"
+                    >
+                      SAQLASH
                     </button>
                   </div>
                 </form>

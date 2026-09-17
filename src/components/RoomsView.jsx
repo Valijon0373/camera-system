@@ -3,10 +3,12 @@ import { useApp } from '../context/AppContext';
 import { CameraStreamPlayer } from './CameraStreamPlayer';
 import { Plus, Edit3, Trash2, Camera as CameraIcon, Check, X, Building, Info, SlidersHorizontal, RefreshCw, Eye, EyeOff, Search } from 'lucide-react';
 import { FaPowerOff } from 'react-icons/fa6';
+import { MdOutlineEdit } from 'react-icons/md';
 
 export const RoomsView = () => {
-  const { rooms, cameras, addRoom, updateRoom, deleteRoom, searchQuery, setSearchQuery, showIpAddresses, setShowIpAddresses, theme } = useApp();
+  const { currentUser, rooms, cameras, addRoom, updateRoom, deleteRoom, searchQuery, setSearchQuery, showIpAddresses, setShowIpAddresses, theme } = useApp();
   const isLight = theme === 'light';
+  const isAdmin = currentUser?.role === 'admin';
   
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -53,6 +55,7 @@ export const RoomsView = () => {
   // Add room submit
   const handleAddSubmit = (e) => {
     e.preventDefault();
+    if (!isAdmin) return;
     const res = addRoom({ number: newRoomNumber, name: newRoomName, description: newRoomDesc });
     if (res.success) {
       setIsAddModalOpen(false);
@@ -115,13 +118,15 @@ export const RoomsView = () => {
             )}
           </div>
 
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="px-4 py-2 bg-gradient-to-r from-teal-400 via-sky-400 to-violet-400 hover:from-teal-300 hover:via-sky-300 hover:to-violet-300 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-teal-500/20 transition-all flex items-center gap-2 justify-center cursor-pointer shrink-0"
-          >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>YANGI XONA QO'SHISH</span>
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="px-4 py-2 bg-gradient-to-r from-teal-400 via-sky-400 to-violet-400 hover:from-teal-300 hover:via-sky-300 hover:to-violet-300 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-teal-500/20 transition-all flex items-center gap-2 justify-center cursor-pointer shrink-0"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>YANGI XONA QO'SHISH</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -259,8 +264,8 @@ export const RoomsView = () => {
                 )}
               </div>
 
-              {/* Card Bottom Footer: Edit & Delete (Trash) Action Buttons */}
-              {!isEditing && (
+              {/* Card Bottom Footer: Edit & Delete (Trash) Action Buttons (Admin Only) */}
+              {!isEditing && isAdmin && (
                 <div className={`mt-3 pt-3 flex items-center justify-between border-t ${isLight ? 'border-slate-100' : 'border-white/5'}`}>
                   <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-400">
                     <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
@@ -268,7 +273,7 @@ export const RoomsView = () => {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {/* 1) Power Icon button (Clickable to toggle camera power) */}
+                    {/* 1) Power Icon button */}
                     <button
                       onClick={() => roomCamera && toggleCameraPower(roomCamera.id)}
                       disabled={!roomCamera}
@@ -300,7 +305,7 @@ export const RoomsView = () => {
                       }`}
                       title="Xona raqami va nomini tahrirlash"
                     >
-                      <Edit3 className="w-3.5 h-3.5 text-teal-400" />
+                      <MdOutlineEdit className="w-5 h-5 text-teal-400" />
                       <span>Tahrirlash</span>
                     </button>
 
