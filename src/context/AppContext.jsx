@@ -24,9 +24,9 @@ const initialCameras = [
 ];
 
 const initialLogs = [
-  { id: '1', timestamp: '11:00:15', type: 'system', message: 'Tizim muvaffaqiyatli ishga tushirildi', user: 'System' },
-  { id: '2', timestamp: '11:02:40', type: 'camera', message: 'Kamera 192.168.1.101 oqimi ulandi (1080p, 60fps)', user: 'System' },
-  { id: '3', timestamp: '11:04:10', type: 'auth', message: 'Admin tizimga kirdi', user: 'admin' }
+  { id: '1', timestamp: '2026-09-17 11:00:15', date: '2026-09-17', time: '11:00:15', type: 'system', message: 'Tizim muvaffaqiyatli ishga tushirildi', user: 'System' },
+  { id: '2', timestamp: '2026-09-17 11:02:40', date: '2026-09-17', time: '11:02:40', type: 'camera', message: 'Kamera 192.168.1.101 oqimi ulandi (1080p, 60fps)', user: 'System' },
+  { id: '3', timestamp: '2026-09-17 11:04:10', date: '2026-09-17', time: '11:04:10', type: 'auth', message: 'Admin tizimga kirdi', user: 'admin' }
 ];
 
 export const AppProvider = ({ children }) => {
@@ -162,15 +162,18 @@ export const AppProvider = ({ children }) => {
   // Add Log Entry
   const addLog = (type, message, username) => {
     const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
     const timeStr = now.toTimeString().split(' ')[0];
     const newLog = {
       id: Date.now().toString(),
-      timestamp: timeStr,
+      timestamp: `${dateStr} ${timeStr}`,
+      date: dateStr,
+      time: timeStr,
       type,
       message,
       user: username || (currentUser ? currentUser.username : 'Mehmon')
     };
-    setLogs(prev => [newLog, ...prev.slice(0, 49)]); // Keep last 50 logs
+    setLogs(prev => [newLog, ...prev.slice(0, 99)]); // Keep last 100 logs
   };
 
   // Auth actions

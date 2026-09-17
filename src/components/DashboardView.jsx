@@ -62,6 +62,39 @@ export const DashboardView = () => {
   const [navTab, setNavTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  // Logs filter states
+  const [logUserFilter, setLogUserFilter] = useState('');
+  const [logDateFilter, setLogDateFilter] = useState('');
+  const [logSearchQuery, setLogSearchQuery] = useState('');
+
+  // Extract unique users from logs for dropdown filter
+  const uniqueLogUsers = Array.from(new Set(logs.map(l => l.user))).filter(Boolean);
+
+  // Filter logs based on date, user, and search query
+  const filteredLogs = logs.filter(log => {
+    if (logDateFilter) {
+      const logDateStr = log.date || (log.timestamp ? log.timestamp.split(' ')[0] : '');
+      if (logDateStr !== logDateFilter) {
+        return false;
+      }
+    }
+    if (logUserFilter && logUserFilter !== 'all') {
+      if (log.user !== logUserFilter) {
+        return false;
+      }
+    }
+    if (logSearchQuery.trim()) {
+      const q = logSearchQuery.toLowerCase().trim();
+      const matchMessage = (log.message || '').toLowerCase().includes(q);
+      const matchType = (log.type || '').toLowerCase().includes(q);
+      const matchUser = (log.user || '').toLowerCase().includes(q);
+      if (!matchMessage && !matchType && !matchUser) {
+        return false;
+      }
+    }
+    return true;
+  });
+
   // Modal states
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [isAddCamModalOpen, setIsAddCamModalOpen] = useState(false);
@@ -1078,12 +1111,103 @@ export const DashboardView = () => {
 
           {/* TAB 5: LOGS */}
           {navTab === 'logs' && (
-            <div className={`${cardClass} rounded-2xl p-6 space-y-4`}>
-              <h3 className={`text-base font-bold flex items-center gap-2 ${textTitleClass}`}>
-                <Activity className="w-4 h-4 text-teal-400" />
-                Tizim Jurnali va Xavfsizlik Loglari
-              </h3>
+            <div className={`${cardClass} rounded-2xl p-6 space-y-5`}>
+              {/* Header section with counts and clear filter button */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#1e2746]">
+                <div>
+                  <h3 className={`text-lg font-extrabold flex items-center gap-2 ${textTitleClass}`}>
+                    <Activity className="w-5 h-5 text-teal-400" />
+                    Tizim Jurnali va Xavfsizlik Loglari
+                    <span className="text-xs px-2.5 py-0.5 rounded-full font-mono font-bold bg-teal-400/20 text-teal-400 border border-teal-400/30">
+                      {filteredLogs.length} / {logs.length} ta log
+                    </span>
+                  </h3>
+                  <p className={`text-xs mt-1 ${textSubClass}`}>
+                    Tizimdagi barcha harakatlar, avtorizatsiyalar va xavfsizlik hodisalari auditi
+                  </p>
+                </div>
 
+                {(logDateFilter || logUserFilter || logSearchQuery) && (
+                  <button
+                    onClick={() => {
+                      setLogDateFilter('');
+                      setLogUserFilter('');
+                      setLogSearchQuery('');
+                    }}
+                    className={`px-3.5 py-2 text-xs font-mono font-bold rounded-xl border flex items-center gap-2 shrink-0 transition-all cursor-pointer ${
+                      isLight
+                        ? 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100 shadow-sm'
+                        : 'bg-rose-500/15 border-rose-500/30 text-rose-400 hover:bg-rose-500/25 shadow-sm'
+                    }`}
+                  >
+                    <RotateCw className="w-3.5 h-3.5" />
+                    <span>Filtrlarni tozalash</span>
+                  </button>
+                )}
+              </div>
+
+              {/* FILTER CONTROLS BAR */}
+              <div className={`p-4 rounded-xl space-y-3 ${subCardClass}`}>
+                <div className="flex items-center gap-2 text-xs font-bold text-teal-400 uppercase font-mono tracking-wide">
+                  <SlidersHorizontal className="w-4 h-4" />
+                  <span>Loglarni Saralash va Filtrlash</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* 1. Sana bo'yicha filter */}
+                  <div>
+                    <label className={labelClass}>Sana bo'yicha</label>
+                    <input
+                      type="date"
+                      value={logDateFilter}
+                      onChange={(e) => setLogDateFilter(e.target.value)}
+                      className={`w-full px-3.5 py-2.5 text-xs font-mono rounded-xl outline-none transition-all ${inputClass}`}
+                    />
+                  </div>
+
+                  {/* 2. Foydalanuvchi bo'yicha filter */}
+                  <div>
+                    <label className={labelClass}>Foydalanuvchi bo'yicha</label>
+                    <select
+                      value={logUserFilter}
+                      onChange={(e) => setLogUserFilter(e.target.value)}
+                      className={`w-full px-3.5 py-2.5 text-xs font-mono rounded-xl outline-none transition-all ${inputClass}`}
+                    >
+                      <option value="">Barcha foydalanuvchilar</option>
+                      {uniqueLogUsers.map(u => (
+                        <option key={u} value={u}>
+                          {u === 'System' ? '🤖 System (Tizim)' : `@${u}`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 3. Matnli qidiruv */}
+                  <div>
+                    <label className={labelClass}>Qidiruv (Xabar / Turi)</label>
+                    <div className="relative flex items-center">
+                      <input
+                        type="text"
+                        value={logSearchQuery}
+                        onChange={(e) => setLogSearchQuery(e.target.value)}
+                        placeholder="Kalit so'z bo'yicha..."
+                        className={`w-full pl-9 pr-8 py-2.5 text-xs font-mono rounded-xl outline-none transition-all ${inputClass}`}
+                      />
+                      <Search className="w-4 h-4 absolute left-3 text-slate-400 pointer-events-none" />
+                      {logSearchQuery && (
+                        <button
+                          onClick={() => setLogSearchQuery('')}
+                          className="absolute right-2.5 p-1 rounded-md text-slate-400 hover:text-white"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* LOGS TABLE */}
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs font-mono border-collapse border border-slate-300 dark:border-[#222c4a]">
                   <thead>
@@ -1096,21 +1220,56 @@ export const DashboardView = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {logs.map((log, idx) => (
-                      <tr key={log.id} className={tableRowClass}>
-                        <td className={`${tableTdClass} text-center font-bold text-teal-400`}>{idx + 1}</td>
-                        <td className={`${tableTdClass} ${textSubClass} whitespace-nowrap`}>{log.timestamp}</td>
-                        <td className={tableTdClass}>
-                          <span className={`px-2 py-0.5 rounded text-teal-400 border text-[10px] font-bold ${isLight ? 'bg-slate-200 border-slate-300' : 'bg-[#151c33] border-[#222c4a]'}`}>
-                            {log.type.toUpperCase()}
-                          </span>
-                        </td>
-                        <td className={`${tableTdClass} font-bold ${textTitleClass}`}>{log.message}</td>
-                        <td className={`${tableTdClass} ${textSubClass}`}>
-                          User: <strong className={textTitleClass}>{log.user}</strong>
+                    {filteredLogs.length > 0 ? (
+                      filteredLogs.map((log, idx) => {
+                        const datePart = log.date || (log.timestamp ? log.timestamp.split(' ')[0] : '');
+                        const timePart = log.time || (log.timestamp ? log.timestamp.split(' ')[1] : '');
+
+                        return (
+                          <tr key={log.id} className={tableRowClass}>
+                            <td className={`${tableTdClass} text-center font-bold text-teal-400`}>{idx + 1}</td>
+                            <td className={`${tableTdClass} ${textSubClass} whitespace-nowrap`}>
+                              <span className="font-bold text-teal-400/90">{datePart}</span>{' '}
+                              <span className="opacity-75">{timePart}</span>
+                            </td>
+                            <td className={tableTdClass}>
+                              <span className={`px-2 py-0.5 rounded border text-[10px] font-bold ${
+                                log.type === 'system'
+                                  ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400'
+                                  : log.type === 'auth'
+                                  ? 'bg-purple-500/15 border-purple-500/30 text-purple-400'
+                                  : log.type === 'camera'
+                                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                                  : log.type === 'delete'
+                                  ? 'bg-rose-500/15 border-rose-500/30 text-rose-400'
+                                  : log.type === 'update'
+                                  ? 'bg-amber-500/15 border-amber-500/30 text-amber-400'
+                                  : 'bg-teal-500/15 border-teal-500/30 text-teal-400'
+                              }`}>
+                                {log.type.toUpperCase()}
+                              </span>
+                            </td>
+                            <td className={`${tableTdClass} font-bold ${textTitleClass}`}>{log.message}</td>
+                            <td className={`${tableTdClass} ${textSubClass}`}>
+                              <span className="inline-flex items-center gap-1.5 font-bold">
+                                <User className="w-3.5 h-3.5 text-teal-400" />
+                                <span className={textTitleClass}>{log.user}</span>
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan="5" className={`${tableTdClass} text-center py-10 text-slate-400`}>
+                          <div className="flex flex-col items-center justify-center gap-2 py-4">
+                            <Activity className="w-8 h-8 text-slate-500 opacity-40" />
+                            <p className="font-sans text-sm font-semibold">Tanlangan filtrlar bo'yicha hech qanday log topilmadi</p>
+                            <p className="text-xs opacity-75 font-mono">Filtrlarni o'zgartiring yoki "Filtrlarni tozalash" tugmasini bosing</p>
+                          </div>
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
