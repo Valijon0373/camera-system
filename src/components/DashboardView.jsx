@@ -60,6 +60,7 @@ export const DashboardView = () => {
   const [isAddCamModalOpen, setIsAddCamModalOpen] = useState(false);
 
   // User form states
+  const [newFullName, setNewFullName] = useState('');
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState('operator');
@@ -85,9 +86,10 @@ export const DashboardView = () => {
   const handleAddUser = (e) => {
     e.preventDefault();
     setUserMsg(null);
-    const res = addUser({ username: newUsername, password: newPassword, role: newRole });
+    const res = addUser({ fullName: newFullName, username: newUsername, password: newPassword, role: newRole });
     if (res.success) {
-      setUserMsg({ type: 'success', text: `Foydalanuvchi "${newUsername}" muvaffaqiyatli yaratildi!` });
+      setUserMsg({ type: 'success', text: `Foydalanuvchi "${newFullName || newUsername}" muvaffaqiyatli yaratildi!` });
+      setNewFullName('');
       setNewUsername('');
       setNewPassword('');
       setTimeout(() => {
@@ -518,8 +520,8 @@ export const DashboardView = () => {
                       <thead>
                         <tr className={tableHeaderClass}>
                           <th className={`${tableThClass} w-10 text-center`}>№</th>
+                          <th className={tableThClass}>Ism Familiyasi</th>
                           <th className={tableThClass}>Login</th>
-                          <th className={tableThClass}>Parol</th>
                           <th className={tableThClass}>Rol</th>
                         </tr>
                       </thead>
@@ -527,8 +529,8 @@ export const DashboardView = () => {
                         {users.slice(0, 4).map((u, idx) => (
                           <tr key={u.id} className={tableRowClass}>
                             <td className={`${tableTdClass} text-center font-bold text-teal-400`}>{idx + 1}</td>
-                            <td className={`${tableTdClass} font-bold ${textTitleClass}`}>{u.username}</td>
-                            <td className={`${tableTdClass} ${textSubClass}`}>••••••••</td>
+                            <td className={`${tableTdClass} font-bold ${textTitleClass}`}>{u.fullName || u.username}</td>
+                            <td className={`${tableTdClass} font-black text-black font-mono text-sm`}>@{u.username}</td>
                             <td className={tableTdClass}>
                               <span className="px-2 py-0.5 rounded text-[10px] bg-teal-400/20 text-teal-400 font-bold">
                                 {u.role.toUpperCase()}
@@ -612,6 +614,7 @@ export const DashboardView = () => {
                     <thead>
                       <tr className={tableHeaderClass}>
                         <th className={`${tableThClass} w-12 text-center`}>№</th>
+                        <th className={tableThClass}>Ism Familiyasi (F.I.SH)</th>
                         <th className={tableThClass}>Foydalanuvchi Logini</th>
                         <th className={tableThClass}>Paroli</th>
                         <th className={tableThClass}>Roli</th>
@@ -626,8 +629,11 @@ export const DashboardView = () => {
                           <td className={`${tableTdClass} font-bold ${textTitleClass}`}>
                             <div className="flex items-center gap-2">
                               <span className="w-2 h-2 rounded-full bg-teal-400"></span>
-                              {u.username}
+                              {u.fullName || u.username}
                             </div>
+                          </td>
+                          <td className={`${tableTdClass} font-black text-black font-mono text-sm tracking-wide`}>
+                            @{u.username}
                           </td>
                           <td className={`${tableTdClass} font-mono ${textSubClass}`}>
                             <div className="flex items-center gap-2">
@@ -846,6 +852,21 @@ export const DashboardView = () => {
                 <form onSubmit={handleAddUser} className="space-y-4">
                   <div>
                     <label className={labelClass}>
+                      Ism Familiyasi (F.I.SH) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newFullName}
+                      onChange={(e) => setNewFullName(e.target.value)}
+                      placeholder="masalan: Sardor Ikromov"
+                      className={`w-full px-3.5 py-2.5 text-xs font-mono rounded-xl outline-none ${inputClass}`}
+                      autoFocus
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>
                       Login (Username) *
                     </label>
                     <input
@@ -855,7 +876,6 @@ export const DashboardView = () => {
                       onChange={(e) => setNewUsername(e.target.value)}
                       placeholder="masalan: operator_nodir"
                       className={`w-full px-3.5 py-2.5 text-xs font-mono rounded-xl outline-none ${inputClass}`}
-                      autoFocus
                     />
                   </div>
 

@@ -1,12 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Maximize2, Camera, RefreshCw, Radio, Lock, ShieldAlert, Volume2, VolumeX, Eye } from 'lucide-react';
+import { FaPowerOff } from 'react-icons/fa6';
 
-export const CameraStreamPlayer = ({ camera, roomName, roomNumber }) => {
+export const CameraStreamPlayer = ({ camera, roomName, roomNumber, isPowerOn: controlledPowerOn, onTogglePower }) => {
   const { showIpAddresses } = useApp();
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [internalPowerOn, setInternalPowerOn] = useState(true);
+
+  const isPowerOn = controlledPowerOn !== undefined ? controlledPowerOn : internalPowerOn;
+
+  const handleTogglePower = () => {
+    if (onTogglePower) {
+      onTogglePower();
+    } else {
+      setInternalPowerOn(!internalPowerOn);
+    }
+  };
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isAudioOn, setIsAudioOn] = useState(false);
   const [ptzAction, setPtzAction] = useState(null);
@@ -15,6 +27,7 @@ export const CameraStreamPlayer = ({ camera, roomName, roomNumber }) => {
 
   // Dynamic canvas surveillance stream generator
   useEffect(() => {
+    if (!isPowerOn) return;
     let animationFrameId;
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -168,7 +181,7 @@ export const CameraStreamPlayer = ({ camera, roomName, roomNumber }) => {
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [camera, roomNumber]);
+  }, [camera, roomNumber, isPowerOn]);
 
   // Take Snapshot feature
   const handleTakeSnapshot = () => {
@@ -204,13 +217,32 @@ export const CameraStreamPlayer = ({ camera, roomName, roomNumber }) => {
 
   return (
     <div ref={containerRef} className="relative group bg-[#05080f] rounded-xl overflow-hidden border border-white/10 shadow-2xl transition-all">
-      {/* Canvas Video Stream */}
-      <canvas
-        ref={canvasRef}
-        width={640}
-        height={360}
-        className="w-full h-auto aspect-video object-cover block bg-slate-900"
-      />
+      {/* Canvas Video Stream or Power Off Screen */}
+      {!isPowerOn ? (
+        <div className="w-full aspect-video bg-[#070b14] rounded-xl flex flex-col items-center justify-center p-6 text-center border border-rose-500/20">
+          <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mb-3 animate-pulse">
+            <FaPowerOff className="w-7 h-7 text-rose-500" />
+          </div>
+          <h4 className="text-xs font-bold text-slate-200 font-mono tracking-wider">KAMERA ELEKTR MANBASI O'CHIRILGAN</h4>
+          <p className="text-[11px] text-slate-400 font-mono mt-1 max-w-xs">
+            IP Kamera ta'minoti to'xtatilgan (Power Off status). Jonli efirni davom ettirish uchun yoqing.
+          </p>
+          <button
+            onClick={() => setIsPowerOn(true)}
+            className="mt-4 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold font-mono text-xs rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
+          >
+            <FaPowerOff className="w-3.5 h-3.5" />
+            <span>KAMERANI YOQISH (POWER ON)</span>
+          </button>
+        </div>
+      ) : (
+        <canvas
+          ref={canvasRef}
+          width={640}
+          height={360}
+          className="w-full h-auto aspect-video object-cover block bg-slate-900"
+        />
+      )}
 
       {/* PTZ Action Overlay */}
       {ptzAction && (

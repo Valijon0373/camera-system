@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { CameraStreamPlayer } from './CameraStreamPlayer';
-import { Plus, Edit3, Trash2, Camera as CameraIcon, Check, X, Building, Info, SlidersHorizontal, RefreshCw } from 'lucide-react';
+import { Plus, Edit3, Trash2, Camera as CameraIcon, Check, X, Building, Info, SlidersHorizontal, RefreshCw, Eye, EyeOff, Search } from 'lucide-react';
+import { FaPowerOff } from 'react-icons/fa6';
 
 export const RoomsView = () => {
-  const { rooms, cameras, addRoom, updateRoom, deleteRoom, searchQuery, showIpAddresses, theme } = useApp();
+  const { rooms, cameras, addRoom, updateRoom, deleteRoom, searchQuery, setSearchQuery, showIpAddresses, setShowIpAddresses, theme } = useApp();
   const isLight = theme === 'light';
   
   // Modal states
@@ -18,6 +19,18 @@ export const RoomsView = () => {
   const [editNumber, setEditNumber] = useState('');
   const [editName, setEditName] = useState('');
   const [editDesc, setEditDesc] = useState('');
+
+  // Powered off cameras state
+  const [disabledCameraIds, setDisabledCameraIds] = useState([]);
+
+  const toggleCameraPower = (cameraId) => {
+    if (!cameraId) return;
+    setDisabledCameraIds(prev =>
+      prev.includes(cameraId)
+        ? prev.filter(id => id !== cameraId)
+        : [...prev, cameraId]
+    );
+  };
 
   // Start inline editing
   const startEdit = (room) => {
@@ -62,7 +75,7 @@ export const RoomsView = () => {
   return (
     <div className="space-y-6">
       {/* Top Action Bar */}
-      <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border transition-colors ${
+      <div className={`flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 rounded-2xl border transition-colors ${
         isLight ? 'bg-white/90 border-teal-100 shadow-sm shadow-teal-900/5' : 'bg-white/[0.03] border-white/10 backdrop-blur-md'
       }`}>
         <div className="flex items-center gap-3.5">
@@ -71,7 +84,7 @@ export const RoomsView = () => {
           </div>
           <div>
             <h2 className={`text-xl font-extrabold tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
-              Xonalar va IP Kameralar Kuzatuvi
+              UrSPI Xonalar va IP Kameralar Kuzatuvi
             </h2>
             <p className={`text-xs mt-0.5 font-mono ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
               Jami xonalar: <span className={`${isLight ? 'text-teal-600' : 'text-teal-300'} font-bold`}>{rooms.length} ta</span> | IP Kameralar: <span className="text-emerald-500 font-bold">{cameras.length} ta</span>
@@ -79,13 +92,37 @@ export const RoomsView = () => {
           </div>
         </div>
 
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="px-4.5 py-2.5 bg-gradient-to-r from-teal-400 via-sky-400 to-violet-400 hover:from-teal-300 hover:via-sky-300 hover:to-violet-300 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-teal-500/20 transition-all flex items-center gap-2 self-stretch sm:self-auto justify-center cursor-pointer"
-        >
-          <Plus className="w-5 h-5 stroke-[3]" />
-          <span>YANGI XONA QO'SHISH</span>
-        </button>
+        {/* Right side controls: Search, IP toggle, Add button */}
+        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+          {/* Quick Search */}
+          <div className="relative flex-1 md:w-56">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <Search className="w-4 h-4 text-teal-400" />
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Xonalarni izlash..."
+              className={`w-full pl-9 pr-7 py-2 text-xs font-mono rounded-xl border transition-all ${
+                isLight ? 'bg-slate-50 border-slate-200 text-slate-900 focus:border-teal-500' : 'bg-[#0a101c] border-white/10 text-white focus:border-teal-400'
+              }`}
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-white">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-4 py-2 bg-gradient-to-r from-teal-400 via-sky-400 to-violet-400 hover:from-teal-300 hover:via-sky-300 hover:to-violet-300 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-teal-500/20 transition-all flex items-center gap-2 justify-center cursor-pointer shrink-0"
+          >
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>YANGI XONA QO'SHISH</span>
+          </button>
+        </div>
       </div>
 
       {/* Empty State */}
@@ -106,6 +143,7 @@ export const RoomsView = () => {
         {filteredRooms.map((room) => {
           // Find camera associated with this room
           const roomCamera = cameras.find(c => c.roomId === room.id);
+          const isCameraOff = roomCamera ? disabledCameraIds.includes(roomCamera.id) : true;
           const isEditing = editingRoomId === room.id;
 
           return (
@@ -177,9 +215,14 @@ export const RoomsView = () => {
                         XONA № {room.number}
                       </span>
                       {roomCamera && (
-                        <span className={`flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-0.5 rounded-md ${isLight ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'}`}>
-                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                          {showIpAddresses ? `IP: ${roomCamera.ip}` : 'KAMERA ONLINE'}
+                        <span className={`flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-0.5 rounded-md ${
+                          isCameraOff
+                            ? isLight ? 'bg-rose-50 border border-rose-200 text-rose-600' : 'bg-rose-500/10 border border-rose-500/30 text-rose-400'
+                            : isLight ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'
+                        }`}>
+                          <span className={`w-2 h-2 rounded-full ${isCameraOff ? 'bg-rose-500' : 'bg-emerald-400 animate-ping'}`}></span>
+                          <FaPowerOff className={`w-3 h-3 ${isCameraOff ? 'text-rose-400' : 'text-emerald-400'}`} />
+                          {isCameraOff ? 'KAMERA O\'CHIRILGAN' : (showIpAddresses ? `IP: ${roomCamera.ip}` : 'KAMERA ONLINE')}
                         </span>
                       )}
                     </div>
@@ -191,26 +234,6 @@ export const RoomsView = () => {
                     </p>
                   </div>
                 )}
-
-                {/* Edit & Delete Action Buttons */}
-                {!isEditing && (
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <button
-                      onClick={() => startEdit(room)}
-                      className={`p-2 rounded-xl border transition-all hover:scale-105 ${isLight ? 'bg-slate-50 border-slate-200 hover:border-teal-400 text-slate-500 hover:text-teal-600' : 'bg-white/5 border-white/10 hover:border-teal-400/50 text-slate-400 hover:text-teal-200'}`}
-                      title="Xona raqami va nomini tahrirlash"
-                    >
-                      <Edit3 className="w-4.5 h-4.5" />
-                    </button>
-                    <button
-                      onClick={() => deleteRoom(room.id)}
-                      className={`p-2 rounded-xl border transition-all hover:scale-105 ${isLight ? 'bg-slate-50 border-slate-200 hover:border-rose-300 text-slate-500 hover:text-rose-600' : 'bg-white/5 border-white/10 hover:border-rose-400/50 text-slate-400 hover:text-rose-300'}`}
-                      title="Xonani o'chirish"
-                    >
-                      <Trash2 className="w-4.5 h-4.5" />
-                    </button>
-                  </div>
-                )}
               </div>
 
               {/* Video Player or No-Camera Placeholder */}
@@ -220,19 +243,83 @@ export const RoomsView = () => {
                     camera={roomCamera}
                     roomName={room.name}
                     roomNumber={room.number}
+                    isPowerOn={!isCameraOff}
+                    onTogglePower={() => toggleCameraPower(roomCamera.id)}
                   />
                 ) : (
                   <div className={`aspect-video border border-dashed rounded-xl flex flex-col items-center justify-center p-6 text-center ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-950/80 border-white/10'}`}>
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-2 ${isLight ? 'bg-white border border-slate-200' : 'bg-white/5 border border-white/10'}`}>
-                      <CameraIcon className={`w-6 h-6 ${isLight ? 'text-slate-400' : 'text-slate-600'}`} />
+                      <FaPowerOff className={`w-6 h-6 ${isLight ? 'text-slate-400' : 'text-slate-500'}`} />
                     </div>
-                    <p className={`text-xs font-bold ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Kamera biriktirilmagan</p>
+                    <p className={`text-xs font-bold ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Kamera biriktirilmagan (O'chirilgan)</p>
                     <p className={`text-[11px] font-mono mt-1 ${isLight ? 'text-slate-400' : 'text-slate-600'}`}>
                       Dashboard bo'limi orqali bu xonaga IP kamera biriktirishingiz mumkin.
                     </p>
                   </div>
                 )}
               </div>
+
+              {/* Card Bottom Footer: Edit & Delete (Trash) Action Buttons */}
+              {!isEditing && (
+                <div className={`mt-3 pt-3 flex items-center justify-between border-t ${isLight ? 'border-slate-100' : 'border-white/5'}`}>
+                  <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+                    <span>Xona № {room.number}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {/* 1) Power Icon button (Clickable to toggle camera power) */}
+                    <button
+                      onClick={() => roomCamera && toggleCameraPower(roomCamera.id)}
+                      disabled={!roomCamera}
+                      className={`p-2 rounded-xl border transition-all hover:scale-110 flex items-center justify-center cursor-pointer ${
+                        roomCamera
+                          ? !isCameraOff
+                            ? isLight ? 'bg-emerald-50 border-emerald-300 text-emerald-600 shadow-sm shadow-emerald-500/20' : 'bg-emerald-500/15 border-emerald-400/50 text-emerald-300 shadow-lg shadow-emerald-500/10'
+                            : isLight ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm shadow-rose-500/20' : 'bg-rose-500/15 border-rose-400/50 text-rose-400 shadow-lg shadow-rose-500/10'
+                          : isLight ? 'bg-slate-100 border-slate-200 text-slate-400 opacity-50 cursor-not-allowed' : 'bg-white/5 border-white/10 text-slate-500 opacity-50 cursor-not-allowed'
+                      }`}
+                      title={
+                        !roomCamera
+                          ? "Kamera biriktirilmagan"
+                          : !isCameraOff
+                          ? "Kamerani o'chirish (Power Off)"
+                          : "Kamerani yoqish (Power On)"
+                      }
+                    >
+                      <FaPowerOff className={`w-4 h-4 ${roomCamera ? (!isCameraOff ? 'text-emerald-400' : 'text-rose-400') : 'text-slate-500'}`} />
+                    </button>
+
+                    {/* 2) Tahrirlash button */}
+                    <button
+                      onClick={() => startEdit(room)}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all hover:scale-105 cursor-pointer ${
+                        isLight
+                          ? 'bg-slate-50 border-slate-200 text-slate-600 hover:border-teal-400 hover:text-teal-600'
+                          : 'bg-white/5 border-white/10 text-slate-300 hover:border-teal-400/50 hover:text-teal-200'
+                      }`}
+                      title="Xona raqami va nomini tahrirlash"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-teal-400" />
+                      <span>Tahrirlash</span>
+                    </button>
+
+                    {/* 3) O'chirish button */}
+                    <button
+                      onClick={() => deleteRoom(room.id)}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all hover:scale-105 cursor-pointer ${
+                        isLight
+                          ? 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100 hover:border-rose-300'
+                          : 'bg-rose-500/10 border-rose-500/30 text-rose-300 hover:bg-rose-500/20 hover:border-rose-500/50'
+                      }`}
+                      title="Xonani o'chirish (Trash)"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                      <span>O'chirish</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

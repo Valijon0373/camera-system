@@ -73,11 +73,11 @@ export const LoginModal = ({ isAdminRoute: propIsAdminRoute }) => {
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-black text-white uppercase tracking-wider mb-2">
               Foydalanuvchi Logini
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-teal-400">
                 <User className="w-5 h-5" />
               </div>
               <input
@@ -86,7 +86,7 @@ export const LoginModal = ({ isAdminRoute: propIsAdminRoute }) => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Login (masalan: admin)"
-                className="w-full pl-11 pr-4 py-3 text-sm font-mono glass-input rounded-xl focus:ring-2 focus:ring-teal-400/40 transition-all"
+                className="w-full pl-11 pr-4 py-3 text-sm font-mono font-black glass-input rounded-xl focus:ring-2 focus:ring-teal-400/40 transition-all text-white placeholder:font-normal"
               />
             </div>
           </div>

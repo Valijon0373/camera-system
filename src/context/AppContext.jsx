@@ -4,9 +4,9 @@ const AppContext = createContext();
 
 // Initial Default Data
 const initialUsers = [
-  { id: '1', username: 'admin', password: '123456', role: 'admin', createdAt: '2026-09-15 10:00' },
-  { id: '2', username: 'user', password: '123456', role: 'operator', createdAt: '2026-09-16 11:30' },
-  { id: '3', username: 'bekzod', password: 'pass123', role: 'operator', createdAt: '2026-09-17 09:15' }
+  { id: '1', fullName: 'Bosh Administrator', username: 'admin', password: '123456', role: 'admin', createdAt: '2026-09-15 10:00' },
+  { id: '2', fullName: 'Sardor Ikromov', username: 'user', password: '123456', role: 'operator', createdAt: '2026-09-16 11:30' },
+  { id: '3', fullName: 'Bekzod Rahimov', username: 'bekzod', password: 'pass123', role: 'operator', createdAt: '2026-09-17 09:15' }
 ];
 
 const initialRooms = [
@@ -38,7 +38,13 @@ export const AppProvider = ({ children }) => {
 
   const [users, setUsers] = useState(() => {
     const saved = localStorage.getItem('cam_users');
-    return saved ? JSON.parse(saved) : initialUsers;
+    if (!saved) return initialUsers;
+    const parsed = JSON.parse(saved);
+    // Ensure all users have a fullName fallback if loaded from older localStorage
+    return parsed.map(u => ({
+      ...u,
+      fullName: u.fullName || (u.username === 'admin' ? 'Bosh Administrator' : u.username)
+    }));
   });
 
   const [rooms, setRooms] = useState(() => {
@@ -145,20 +151,21 @@ export const AppProvider = ({ children }) => {
   };
 
   // User CRUD
-  const addUser = ({ username, password, role }) => {
+  const addUser = ({ fullName, username, password, role }) => {
     if (!username || !password) return { success: false, message: 'Barcha maydonlarni to\'ldiring' };
     const exists = users.some(u => u.username.toLowerCase() === username.toLowerCase());
     if (exists) return { success: false, message: 'Ushbu nomdagi foydalanuvchi mavjud!' };
 
     const newUser = {
       id: Date.now().toString(),
+      fullName: fullName && fullName.trim() ? fullName.trim() : username.trim(),
       username: username.trim(),
       password: password.trim(),
       role: role || 'operator',
       createdAt: new Date().toISOString().split('T')[0]
     };
     setUsers(prev => [...prev, newUser]);
-    addLog('user', `Yangi foydalanuvchi yaratildi: "${newUser.username}" (${newUser.role})`);
+    addLog('user', `Yangi foydalanuvchi yaratildi: "${newUser.fullName}" (@${newUser.username})`);
     return { success: true };
   };
 
