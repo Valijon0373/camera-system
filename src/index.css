@@ -60,6 +60,15 @@
     box-shadow: 0 18px 50px -24px rgba(0, 0, 0, 0.55);
   }
 
+  .dark-glass-modal {
+    background: linear-gradient(135deg, rgba(8, 14, 28, 0.88) 0%, rgba(2, 5, 14, 0.94) 100%) !important;
+    backdrop-filter: blur(28px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 35px rgba(45, 212, 191, 0.15) !important;
+    color: #ffffff !important;
+  }
+
   .glass-card {
     background: var(--surface-2);
     backdrop-filter: blur(14px);
@@ -177,3 +186,82 @@
   background: rgba(45, 212, 191, 0.35);
   color: inherit;
 }
+
+/* Stagger & Fade Animations */
+@keyframes fadeSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeScaleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.94) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes floatSubtle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 35px rgba(45, 212, 191, 0.15);
+  }
+  50% {
+    box-shadow: 0 35px 85px -10px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 0 55px rgba(45, 212, 191, 0.35);
+  }
+}
+
+.animate-fade-slide-up {
+  animation: fadeSlideUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-scale-in {
+  animation: fadeScaleIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 1.2s ease-out both;
+}
+
+.animate-float-subtle {
+  animation: floatSubtle 5s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 6s ease-in-out infinite;
+}
+
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+.delay-700 { animation-delay: 700ms; }
+
