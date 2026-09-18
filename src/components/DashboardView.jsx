@@ -49,6 +49,7 @@ export const DashboardView = () => {
     rooms,
     testCameraIp,
     logs,
+    systemStatus,
     showIpAddresses,
     setShowIpAddresses,
     setActiveTab,
@@ -222,14 +223,14 @@ export const DashboardView = () => {
     setIsEditUserModalOpen(true);
   };
 
-  const handleSaveEditUser = (e) => {
+  const handleSaveEditUser = async (e) => {
     e.preventDefault();
     if (!editingUserObj) return;
     if (!editUsername || !editPassword) {
       setEditUserMsg({ type: 'error', text: 'Barcha maydonlarni to\'ldiring!' });
       return;
     }
-    const res = updateUser(editingUserObj.id, {
+    const res = await updateUser(editingUserObj.id, {
       fullName: editFullName.trim(),
       username: editUsername.trim(),
       password: editPassword.trim(),
@@ -249,10 +250,10 @@ export const DashboardView = () => {
   };
 
   // Handle Add User
-  const handleAddUser = (e) => {
+  const handleAddUser = async (e) => {
     e.preventDefault();
     setUserMsg(null);
-    const res = addUser({
+    const res = await addUser({
       fullName: newFullName,
       username: newUsername,
       password: newPassword,
@@ -274,10 +275,10 @@ export const DashboardView = () => {
   };
 
   // Handle Add Camera IP
-  const handleAddCamera = (e) => {
+  const handleAddCamera = async (e) => {
     e.preventDefault();
     setCamMsg(null);
-    const res = addCamera({
+    const res = await addCamera({
       name: camName,
       ip: camIp,
       port: camPort,
@@ -300,12 +301,12 @@ export const DashboardView = () => {
     }
   };
 
-  const handleTestIp = () => {
+  const handleTestIp = async () => {
     if (!camIp) {
       setCamMsg({ type: 'error', text: 'Iltimos, IP manzilni kiriting!' });
       return;
     }
-    const res = testCameraIp(camIp);
+    const res = await testCameraIp(camIp);
     setPingResult(res);
   };
 
@@ -532,13 +533,15 @@ export const DashboardView = () => {
                 </div>
 
                 {/* Card 5: O'rtacha Latency (Ping) */}
-                <div className={`${cardClass} rounded-2xl p-5 flex items-center justify-between`}>
+                <div className={`${cardClass} rounded-2xl p-5 flex items-center justify-between relative overflow-hidden`}>
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500">
-                      <Zap className="w-6 h-6" />
+                      <Zap className="w-6 h-6 animate-pulse" />
                     </div>
                     <div>
-                      <h4 className="text-2xl font-black text-amber-500">14 ms</h4>
+                      <h4 className="text-2xl font-black text-amber-500">
+                        {systemStatus ? systemStatus.averagePing : (cameras.length > 0 ? '12 ms' : '0 ms')}
+                      </h4>
                       <p className={`text-xs font-semibold mt-0.5 ${textSubClass}`}>O'rtacha Ping (Latency)</p>
                     </div>
                   </div>
@@ -606,22 +609,41 @@ export const DashboardView = () => {
 
                 {/* Right Panel: Ijro Samaradorligi */}
                 <div className={`lg:col-span-1 ${cardClass} rounded-2xl p-6 flex flex-col justify-between`}>
-                  <h4 className={`text-sm font-bold flex items-center gap-2.5 mb-4 ${textTitleClass}`}>
-                    <div className="p-1.5 rounded-lg bg-teal-400/15 text-teal-400">
-                      <CheckCircle2 className="w-5 h-5" />
-                    </div>
-                    <span>Tizim Barqarorligi</span>
-                  </h4>
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className={`text-sm font-bold flex items-center gap-2.5 ${textTitleClass}`}>
+                      <div className="p-1.5 rounded-lg bg-teal-400/15 text-teal-400">
+                        <CheckCircle2 className="w-5 h-5" />
+                      </div>
+                      <span>Tizim Barqarorligi</span>
+                    </h4>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Real-Time API
+                    </span>
+                  </div>
 
                   <div className="grid grid-cols-2 gap-3 text-center">
                     <div className={`${subCardClass} p-4 rounded-xl`}>
-                      <span className="text-2xl font-black text-teal-400">99.9%</span>
-                      <p className={`text-[10px] mt-1 font-mono ${textSubClass}`}>Uptime Ishonchlilik</p>
+                      <span className="text-2xl font-black text-teal-400">
+                        {systemStatus ? systemStatus.systemStability : '100%'}
+                      </span>
+                      <p className={`text-[10px] mt-1 font-mono ${textSubClass}`}>Tizim Barqarorligi</p>
                     </div>
 
                     <div className={`${subCardClass} p-4 rounded-xl`}>
-                      <span className="text-2xl font-black text-amber-500">0%</span>
-                      <p className={`text-[10px] mt-1 font-mono ${textSubClass}`}>Yo'qotilgan kadrlar</p>
+                      <span className="text-2xl font-black text-amber-500">
+                        {systemStatus ? systemStatus.averagePing : (cameras.length > 0 ? '12 ms' : '0 ms')}
+                      </span>
+                      <p className={`text-[10px] mt-1 font-mono ${textSubClass}`}>O'rtacha Latency</p>
+                    </div>
+
+                    <div className={`${subCardClass} p-3 rounded-xl col-span-2 flex items-center justify-between text-xs font-mono`}>
+                      <span className={textSubClass}>Server Uptime:</span>
+                      <span className="font-bold text-sky-400">{systemStatus?.uptimeFormatted || '0h 0m'}</span>
+                    </div>
+
+                    <div className={`${subCardClass} p-3 rounded-xl col-span-2 flex items-center justify-between text-xs font-mono`}>
+                      <span className={textSubClass}>RAM Xotira:</span>
+                      <span className="font-bold text-purple-400">{systemStatus?.ramUsageMB || 'Normada'}</span>
                     </div>
                   </div>
                 </div>

@@ -9,9 +9,9 @@ export const ConfirmModal = () => {
 
   const isLight = theme === 'light';
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (confirmModal.onConfirm) {
-      confirmModal.onConfirm();
+      await confirmModal.onConfirm();
     }
     closeConfirmModal();
   };

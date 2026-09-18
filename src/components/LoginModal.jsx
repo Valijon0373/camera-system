@@ -27,18 +27,21 @@ export const LoginModal = ({ isAdminRoute: propIsAdminRoute }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullScreen]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    setTimeout(() => {
-      const res = login(username, password);
+    try {
+      const res = await login(username, password);
       setLoading(false);
       if (!res.success) {
         setError(res.message);
       }
-    }, 400);
+    } catch (err) {
+      setLoading(false);
+      setError('Tizimga kirishda xatolik yuz berdi');
+    }
   };
 
   return (

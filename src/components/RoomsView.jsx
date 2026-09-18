@@ -45,9 +45,9 @@ export const RoomsView = () => {
     setEditDesc(room.description || '');
   };
 
-  const saveEdit = (id) => {
+  const saveEdit = async (id) => {
     if (!editNumber || !editName) return;
-    updateRoom(id, { number: editNumber, name: editName, description: editDesc });
+    await updateRoom(id, { number: editNumber, name: editName, description: editDesc });
     setEditingRoomId(null);
   };
 
@@ -56,10 +56,10 @@ export const RoomsView = () => {
   };
 
   // Add room submit
-  const handleAddSubmit = (e) => {
+  const handleAddSubmit = async (e) => {
     e.preventDefault();
     if (!isAdmin) return;
-    const res = addRoom({ number: newRoomNumber, name: newRoomName, description: newRoomDesc });
+    const res = await addRoom({ number: newRoomNumber, name: newRoomName, description: newRoomDesc });
     if (res.success) {
       setIsAddModalOpen(false);
       setNewRoomNumber('');
