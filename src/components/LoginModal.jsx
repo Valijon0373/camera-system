@@ -66,49 +66,55 @@ export const LoginModal = ({ isAdminRoute: propIsAdminRoute }) => {
       <div className="absolute bottom-1/4 right-1/3 w-[500px] h-[500px] bg-sky-500/10 rounded-full blur-[120px] pointer-events-none z-10 animate-float-subtle" style={{ animationDelay: '2.5s' }} />
 
       {/* Fullscreen Mode Overlay Toggle Button */}
-      <div className="absolute top-4 right-4 z-30">
-        <button
-          onClick={() => setIsFullScreen(!isFullScreen)}
-          className="px-3.5 py-2 rounded-2xl bg-[#070d1e]/80 hover:bg-teal-500/20 border border-teal-400/40 text-teal-300 text-xs font-bold flex items-center gap-2 backdrop-blur-xl shadow-xl transition-all active:scale-95 cursor-pointer pointer-events-auto animate-fade-slide-up delay-100 hover:shadow-teal-500/20"
-        >
-          {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          <span>{isFullScreen ? "Modalni Ko'rsatish" : "Tõliq 3D Ekranda Ko'rish"}</span>
-        </button>
-      </div>
+      {!isAdminRoute && (
+        <div className="absolute top-4 right-4 z-30">
+          <button
+            onClick={() => setIsFullScreen(!isFullScreen)}
+            className="px-3.5 py-2 rounded-2xl bg-[#070d1e]/80 hover:bg-teal-500/20 border border-teal-400/40 text-teal-300 text-xs font-bold flex items-center gap-2 backdrop-blur-xl shadow-xl transition-all active:scale-95 cursor-pointer pointer-events-auto animate-fade-slide-up delay-100 hover:shadow-teal-500/20"
+          >
+            {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            <span>{isFullScreen ? "Modalni Ko'rsatish" : "Tõliq 3D Ekranda Ko'rish"}</span>
+          </button>
+        </div>
+      )}
 
       {/* Main Content Overlay: Left Side Container */}
       {!isFullScreen && (
         <div className="relative z-20 w-full h-full p-4 sm:p-8 lg:p-10 pl-6 sm:pl-14 md:pl-20 lg:pl-28 xl:pl-36 flex flex-col justify-center overflow-y-auto pointer-events-none">
           <div className="max-w-xl w-full pointer-events-auto">
-            {/* Left Header Info */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/15 border border-teal-400/30 text-teal-300 text-xs font-bold w-fit mb-3 shadow-sm backdrop-blur-md animate-fade-slide-up delay-100 hover:scale-105 transition-transform duration-300 cursor-default">
-              <span className="w-2.5 h-2.5 rounded-full bg-teal-400 animate-pulse"></span>
-              UrSPI Smart Camera System 3D
-            </div>
-            
-            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-slate-400 leading-tight animate-fade-slide-up delay-200">
-              UrSPI Kamera Kuzatuv Tizimi
-            </h1>
-            
-            <p className="mt-2.5 text-slate-300 max-w-lg text-xs sm:text-sm leading-relaxed font-light drop-shadow-md animate-fade-slide-up delay-300">
-              UrSPI kameralarini interaktiv real vaqt rejimida kuzatib boring. Zamonaviy texnologiyalar yordamida binolar va xonalardagi xavfsizlik va nazoratni maksimal darajaga yetkazing.
-            </p>
+            {!isAdminRoute && (
+              <>
+                {/* Left Header Info */}
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/15 border border-teal-400/30 text-teal-300 text-xs font-bold w-fit mb-3 shadow-sm backdrop-blur-md animate-fade-slide-up delay-100 hover:scale-105 transition-transform duration-300 cursor-default">
+                  <span className="w-2.5 h-2.5 rounded-full bg-teal-400 animate-pulse"></span>
+                  UrSPI Smart Camera System 3D
+                </div>
+                
+                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-slate-400 leading-tight animate-fade-slide-up delay-200">
+                  UrSPI Kamera Kuzatuv Tizimi
+                </h1>
+                
+                <p className="mt-2.5 text-slate-300 max-w-lg text-xs sm:text-sm leading-relaxed font-light drop-shadow-md animate-fade-slide-up delay-300">
+                  UrSPI kameralarini interaktiv real vaqt rejimida kuzatib boring. Zamonaviy texnologiyalar yordamida binolar va xonalardagi xavfsizlik va nazoratni maksimal darajaga yetkazing.
+                </p>
 
-            {/* Badges Row with 360° Nazorat */}
-            <div className="mt-3.5 flex flex-wrap items-center gap-2 text-xs font-mono animate-fade-slide-up delay-400">
-              <span className="px-3 py-1 rounded-xl bg-[#070d1e]/80 border border-teal-400/30 text-teal-300 flex items-center gap-1.5 backdrop-blur-md hover:border-teal-400/60 hover:scale-105 transition-all duration-300 cursor-default">
-                <Move3d className="w-3.5 h-3.5" /> 3D Maket
-              </span>
-              <span className="px-3 py-1 rounded-xl bg-[#070d1e]/80 border border-sky-400/30 text-sky-300 flex items-center gap-1.5 backdrop-blur-md hover:border-sky-400/60 hover:scale-105 transition-all duration-300 cursor-default">
-                <Compass className="w-3.5 h-3.5" /> Interaktiv Aylantirish
-              </span>
-              <span className="px-3 py-1 rounded-xl bg-[#070d1e]/80 border border-violet-400/30 text-violet-300 flex items-center gap-1.5 backdrop-blur-md font-bold hover:border-violet-400/60 hover:scale-105 transition-all duration-300 cursor-default">
-                <Layers className="w-3.5 h-3.5 text-violet-400" /> 360° Nazorat
-              </span>
-            </div>
+                {/* Badges Row with 360° Nazorat */}
+                <div className="mt-3.5 flex flex-wrap items-center gap-2 text-xs font-mono animate-fade-slide-up delay-400">
+                  <span className="px-3 py-1 rounded-xl bg-[#070d1e]/80 border border-teal-400/30 text-teal-300 flex items-center gap-1.5 backdrop-blur-md hover:border-teal-400/60 hover:scale-105 transition-all duration-300 cursor-default">
+                    <Move3d className="w-3.5 h-3.5" /> 3D Maket
+                  </span>
+                  <span className="px-3 py-1 rounded-xl bg-[#070d1e]/80 border border-sky-400/30 text-sky-300 flex items-center gap-1.5 backdrop-blur-md hover:border-sky-400/60 hover:scale-105 transition-all duration-300 cursor-default">
+                    <Compass className="w-3.5 h-3.5" /> Interaktiv Aylantirish
+                  </span>
+                  <span className="px-3 py-1 rounded-xl bg-[#070d1e]/80 border border-violet-400/30 text-violet-300 flex items-center gap-1.5 backdrop-blur-md font-bold hover:border-violet-400/60 hover:scale-105 transition-all duration-300 cursor-default">
+                    <Layers className="w-3.5 h-3.5 text-violet-400" /> 360° Nazorat
+                  </span>
+                </div>
+              </>
+            )}
 
-            {/* LOGIN MODAL CARD - PLACED DIRECTLY UNDER 360° NAZORAT ON THE LEFT */}
-            <div className="mt-5 w-full dark-glass-modal rounded-3xl p-5 sm:p-7 relative overflow-hidden max-w-md animate-fade-scale-in delay-500 animate-pulse-glow hover:border-teal-400/50 transition-all duration-300">
+            {/* LOGIN MODAL CARD - PLACED DIRECTLY UNDER 360° NAZORAT ON THE LEFT OR CENTERED FOR ADMIN */}
+            <div className={`w-full dark-glass-modal rounded-3xl p-5 sm:p-7 relative overflow-hidden max-w-md animate-fade-scale-in delay-500 animate-pulse-glow hover:border-teal-400/50 transition-all duration-300 ${isAdminRoute ? '' : 'mt-5'}`}>
               {/* Top Header Badge inside Form - Centered Icon & Text */}
               <div className="flex flex-col items-center text-center mb-5">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-400 via-sky-400 to-violet-400 p-0.5 shadow-lg shadow-teal-500/30 mb-2.5 animate-float-subtle">

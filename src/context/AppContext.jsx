@@ -349,27 +349,28 @@ export const AppProvider = ({ children }) => {
   };
 
   // Camera CRUD
-  const addCamera = async ({ name, ip, port, protocol, roomId }) => {
-    if (!name || !ip) {
-      showToast({ type: 'delete', title: 'Xatolik', message: 'Kamera nomi va IP manzilini kiriting!' });
-      return { success: false, message: 'Kamera nomi va IP manzilini kiriting!' };
+  const addCamera = async ({ name, ip, port, protocol, roomId, rtspUrl }) => {
+    if (!name || (!ip && !rtspUrl)) {
+      showToast({ type: 'delete', title: 'Xatolik', message: 'Kamera nomi va IP manzil yoki RTSP Linkini kiriting!' });
+      return { success: false, message: 'Kamera nomi va IP manzil yoki RTSP Linkini kiriting!' };
     }
 
     try {
       const res = await fetch(`${API_BASE}/cameras`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, ip, port, protocol, roomId })
+        body: JSON.stringify({ name, ip, port, protocol, roomId, rtspUrl })
       });
       const data = await res.json();
       if (data.success && data.data) {
         setCameras(prev => [...prev, data.data]);
-        await addLog('camera', `Yangi IP Kamera qo'shildi: "${data.data.name}" [IP: ${data.data.ip}]`);
-        showToast({ type: 'add', title: 'Saqlandi', message: `Yangi IP kamera "${data.data.name}" [IP: ${data.data.ip}] saqlandi!` });
+        const details = data.data.rtspUrl ? `RTSP: ${data.data.rtspUrl}` : `IP: ${data.data.ip}`;
+        await addLog('camera', `Yangi Kamera qo'shildi: "${data.data.name}" [${details}]`);
+        showToast({ type: 'add', title: 'Saqlandi', message: `Yangi kamera "${data.data.name}" saqlandi!` });
         fetchSystemStatus();
         return { success: true };
       } else {
-        showToast({ type: 'delete', title: 'Xatolik', message: data.message || 'IP manzil formati noto\'g\'ri' });
+        showToast({ type: 'delete', title: 'Xatolik', message: data.message || 'Xatolik yuz berdi' });
         return { success: false, message: data.message };
       }
     } catch (err) {

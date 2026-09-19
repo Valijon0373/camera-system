@@ -3,6 +3,7 @@ import { login } from '../controllers/authController.js';
 import { getUsers, createUser, updateUser, deleteUser } from '../controllers/userController.js';
 import { getRooms, createRoom, updateRoom, deleteRoom } from '../controllers/roomController.js';
 import { getCameras, createCamera, updateCamera, deleteCamera, testPing } from '../controllers/cameraController.js';
+import { streamCamera, snapshotCamera } from '../controllers/streamController.js';
 import { getLogs, createLog, clearLogs } from '../controllers/logController.js';
 import { getSystemStatus, refreshCameraPings } from '../controllers/systemController.js';
 
@@ -33,6 +34,8 @@ router.post('/cameras', createCamera);
 router.put('/cameras/:id', updateCamera);
 router.delete('/cameras/:id', deleteCamera);
 router.post('/cameras/test-ping', testPing);
+router.get('/cameras/:id/stream', streamCamera);
+router.get('/cameras/:id/snapshot', snapshotCamera);
 
 // Log Routes
 router.get('/logs', getLogs);

@@ -121,6 +121,8 @@ export const DashboardView = () => {
   const [camPort, setCamPort] = useState('554');
   const [camProtocol, setCamProtocol] = useState('RTSP');
   const [camRoomId, setCamRoomId] = useState('');
+  const [camRtspUrl, setCamRtspUrl] = useState('');
+  const [isAddRtspCamModalOpen, setIsAddRtspCamModalOpen] = useState(false);
   const [camMsg, setCamMsg] = useState(null);
   const [pingResult, setPingResult] = useState(null);
 
@@ -298,6 +300,36 @@ export const DashboardView = () => {
       }, 800);
     } else {
       setCamMsg({ type: 'error', text: res.message });
+    }
+  };
+
+  // Handle Add Camera via RTSP Link URL
+  const handleAddRtspCamera = async (e) => {
+    e.preventDefault();
+    setCamMsg(null);
+    if (!camName || !camRtspUrl) {
+      setCamMsg({ type: 'error', text: 'Kamera nomi va RTSP Linkini kiriting!' });
+      return;
+    }
+
+    const res = await addCamera({
+      name: camName,
+      rtspUrl: camRtspUrl,
+      roomId: camRoomId,
+      protocol: camRtspUrl.toLowerCase().startsWith('http') ? 'HTTP' : 'RTSP'
+    });
+
+    if (res.success) {
+      setCamMsg({ type: 'success', text: `RTSP Kamera "${camName}" muvaffaqiyatli qo'shildi!` });
+      setCamName('');
+      setCamRtspUrl('');
+      setCamRoomId('');
+      setTimeout(() => {
+        setIsAddRtspCamModalOpen(false);
+        setCamMsg(null);
+      }, 800);
+    } else {
+      setCamMsg({ type: 'error', text: res.message || 'Xatolik yuz berdi' });
     }
   };
 
@@ -958,7 +990,7 @@ export const DashboardView = () => {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
                       onClick={() => setShowIpAddresses(!showIpAddresses)}
                       className={`px-3 py-2 rounded-xl text-xs font-mono border transition-all ${
@@ -968,15 +1000,30 @@ export const DashboardView = () => {
                       {showIpAddresses ? '👁️ IP Ko\'rinmoqda' : '🙈 IP Berkitilgan'}
                     </button>
 
+                    {/* Button 1: IP Manzil Bilan Qo'shish */}
                     <button
                       onClick={() => {
                         setCamMsg(null);
                         setIsAddCamModalOpen(true);
                       }}
                       className={primaryBtn}
+                      title="Kamerani IP manzil orqali qo'shish"
                     >
                       <Plus className="w-4 h-4 stroke-[3]" />
-                      <span>Qo'shish</span>
+                      <span>+ IP Manzil Bilan</span>
+                    </button>
+
+                    {/* Button 2: RTSP Link Bilan Qo'shish */}
+                    <button
+                      onClick={() => {
+                        setCamMsg(null);
+                        setIsAddRtspCamModalOpen(true);
+                      }}
+                      className="px-4 py-2.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-500 hover:from-sky-400 hover:via-indigo-400 hover:to-purple-400 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-sky-500/20 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                      title="Kamerani RTSP Stream URL link orqali qo'shish"
+                    >
+                      <Radio className="w-4 h-4 animate-pulse text-sky-200" />
+                      <span>🔗 RTSP Link Bilan</span>
                     </button>
                   </div>
                 </div>
@@ -1554,6 +1601,112 @@ export const DashboardView = () => {
                       className="flex-1 py-2.5 px-4 bg-gradient-to-r from-teal-400 via-sky-400 to-violet-400 hover:from-teal-300 hover:via-sky-300 hover:to-violet-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-teal-500/20 transition-all cursor-pointer"
                     >
                       KAMERANI SAQLASH
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL: RTSP LINK BILAN KAMERA QO'SHISH */}
+          {isAddRtspCamModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+              <div className={`${cardClass} w-full max-w-lg rounded-2xl p-6 shadow-2xl relative border border-slate-200 dark:border-[#1e2746]`}>
+                {/* Modal Header */}
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-200 dark:border-[#1e2746]">
+                  <h3 className={`text-base font-bold flex items-center gap-2 ${textTitleClass}`}>
+                    <Radio className="w-5 h-5 text-sky-400 shrink-0 animate-pulse" />
+                    RTSP Link (URL) Yordamida Kamera Qo'shish
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setIsAddRtspCamModalOpen(false);
+                      setCamMsg(null);
+                    }}
+                    className={`p-1.5 rounded-xl transition-colors ${isLight ? 'hover:bg-slate-100 text-slate-500' : 'hover:bg-[#151c33] text-slate-400 hover:text-white'}`}
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {camMsg && (
+                  <div className={`p-3 mb-4 rounded-xl text-xs font-medium ${
+                    camMsg.type === 'success' ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-500' : 'bg-red-500/15 border border-red-500/30 text-red-500'
+                  }`}>
+                    {camMsg.text}
+                  </div>
+                )}
+
+                <form onSubmit={handleAddRtspCamera} className="space-y-4">
+                  <div>
+                    <label className={labelClass}>
+                      Kamera Nomi *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={camName}
+                      onChange={(e) => setCamName(e.target.value)}
+                      placeholder="masalan: Kamera 101-A (RTSP Link)"
+                      className={`w-full px-3.5 py-2.5 text-xs font-mono rounded-xl outline-none ${inputClass}`}
+                      autoFocus
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>
+                      RTSP Stream URL / Link Manzili *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={camRtspUrl}
+                      onChange={(e) => setCamRtspUrl(e.target.value)}
+                      placeholder="rtsp://admin:123456@192.168.1.100:554/live/ch0"
+                      className={`w-full px-3.5 py-2.5 text-xs font-mono rounded-xl outline-none ${inputClass}`}
+                    />
+                    <p className={`text-[10px] font-mono mt-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                      * IP Kamera va NVR qurilmalari RTSP/HTTP video streaming manzili (RTSP/HTTP/HLS)
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>
+                      Biriktiriladigan Xona
+                    </label>
+                    <select
+                      value={camRoomId}
+                      onChange={(e) => setCamRoomId(e.target.value)}
+                      className={`w-full px-3.5 py-2.5 text-xs font-mono rounded-xl outline-none ${inputClass}`}
+                    >
+                      <option value="">-- Xona biriktirilmagan --</option>
+                      {rooms.map(r => (
+                        <option key={r.id} value={r.id}>
+                          Xona № {r.number} - {r.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAddRtspCamModalOpen(false);
+                        setCamMsg(null);
+                      }}
+                      className={`flex-1 py-2.5 px-4 font-bold text-xs rounded-xl border transition-all ${
+                        isLight ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700' : 'bg-[#151c33] hover:bg-[#1c2646] border-[#222c4a] text-slate-300'
+                      }`}
+                    >
+                      Bekor qilish
+                    </button>
+
+                    <button
+                      type="submit"
+                      className="flex-1 py-2.5 px-4 bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-500 hover:from-sky-400 hover:via-indigo-400 hover:to-purple-400 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-sky-500/20 transition-all cursor-pointer"
+                    >
+                      RTSP KAMERANI SAQLASH
                     </button>
                   </div>
                 </form>

@@ -55,12 +55,20 @@ export async function initDb() {
       ip TEXT NOT NULL,
       port TEXT DEFAULT '554',
       protocol TEXT DEFAULT 'RTSP',
+      rtspUrl TEXT DEFAULT '',
       roomId TEXT DEFAULT '',
       status TEXT DEFAULT 'online',
       ping INTEGER DEFAULT 10,
       createdAt TEXT NOT NULL
     );
   `);
+
+  // Safely add rtspUrl column if upgrading existing table
+  try {
+    await db.exec(`ALTER TABLE cameras ADD COLUMN rtspUrl TEXT DEFAULT ''`);
+  } catch (e) {
+    // Column already exists
+  }
 
   // Create Logs Table
   await db.exec(`
