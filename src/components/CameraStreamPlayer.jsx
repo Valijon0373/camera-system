@@ -142,26 +142,16 @@ export const CameraStreamPlayer = ({ camera, roomName, roomNumber, isPowerOn: co
             />
           )}
 
-          <div className="absolute top-3 left-3 pointer-events-none max-w-[58%]">
-            <div className="flex items-center gap-2 mb-1.5">
+          <div className="absolute top-3 left-3 pointer-events-none max-w-[58%] drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.95)]">
+            <div className="flex items-center gap-2 mb-1">
               <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-[11px] font-mono font-bold text-white drop-shadow">REC [LIVE]</span>
-            </div>
-            <div className="bg-black/60 border border-teal-400/30 rounded-md px-2 py-1">
-              <div className="text-[11px] font-mono font-bold text-teal-300">KAMERA: {camera?.name || 'IP KAMERA'}</div>
-              <div className="text-[10px] font-mono text-slate-400 truncate">
-                {camera?.rtspUrl
-                  ? `RTSP: ${camera.rtspUrl.length > 42 ? `${camera.rtspUrl.slice(0, 42)}...` : camera.rtspUrl}`
-                  : showIpAddresses && camera?.ip
-                    ? `IP: ${camera.ip}:${camera?.port || '554'} (${camera?.protocol || 'RTSP'})`
-                    : `HOLAT: JONLI ULANISH (${camera?.protocol || 'HD STREAM'})`}
-              </div>
+              <span className="text-[11px] font-mono font-bold text-white">REC [LIVE]</span>
             </div>
           </div>
 
-          <div className="absolute top-3 right-3 bg-black/60 border border-white/10 rounded-md px-2 py-1 text-right pointer-events-none">
+          <div className="absolute top-3 right-3 text-right pointer-events-none drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.95)]">
             <div className="text-[12px] font-mono font-bold text-emerald-400">{timeStr}</div>
-            <div className="text-[10px] font-mono text-slate-400">{dateStr} | XONA: {roomNumber || ''}</div>
+            <div className="text-[10px] font-mono text-slate-200">{dateStr} | XONA: {roomNumber || ''}</div>
           </div>
 
           {streamError && (
